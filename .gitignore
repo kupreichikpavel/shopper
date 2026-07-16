@@ -22,3 +22,20 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+
+# IntelliJ IDEA
+.idea/
+*.iml
+
+# Build and cache
+.gradle/
+**/.gradle/
+**/build/
+**/target/
+
+# macOS and environment
+.DS_Store
+.env
+
+# Gradle Wrapper must be stored in Git
+!**/gradle/wrapper/gradle-wrapper.jar
