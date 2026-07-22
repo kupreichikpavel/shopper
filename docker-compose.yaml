@@ -39,11 +39,10 @@ services:
       context: ./user-service
       dockerfile: Dockerfile
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-shopper}
-      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-shopper}
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-shopper}
-      SPRING_DATA_REDIS_HOST: redis
-      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_PROFILES_ACTIVE: docker
+      POSTGRES_DB: ${POSTGRES_DB:-shopper}
+      POSTGRES_USER: ${POSTGRES_USER:-shopper}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-shopper}
     ports:
       - "${USER_SERVICE_PORT:-8080}:8080"
     depends_on:
