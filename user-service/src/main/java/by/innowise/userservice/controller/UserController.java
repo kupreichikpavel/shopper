@@ -2,6 +2,7 @@ package by.innowise.userservice.controller;
 
 import by.innowise.userservice.dto.common.ActiveStatusUpdateDto;
 import by.innowise.userservice.dto.user.UserCreateDto;
+import by.innowise.userservice.dto.user.UserDetailsResponseDto;
 import by.innowise.userservice.dto.user.UserResponseDto;
 import by.innowise.userservice.dto.user.UserUpdateDto;
 import by.innowise.userservice.service.UserService;
@@ -53,6 +54,17 @@ public class UserController {
     ) {
         return ResponseEntity.ok(
                 userService.findById(id)
+        );
+    }
+
+    @GetMapping("/{id}/details")
+    public ResponseEntity<UserDetailsResponseDto> findDetailsById(
+            @PathVariable
+            @Positive(message = "User id must be positive")
+            Long id
+    ) {
+        return ResponseEntity.ok(
+                userService.findDetailsById(id)
         );
     }
 

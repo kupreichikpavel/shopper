@@ -1,5 +1,6 @@
 package by.innowise.userservice.service.impl;
 
+import by.innowise.userservice.cache.CacheNames;
 import by.innowise.userservice.dto.paymentcard.PaymentCardCreateDto;
 import by.innowise.userservice.dto.paymentcard.PaymentCardResponseDto;
 import by.innowise.userservice.dto.paymentcard.PaymentCardUpdateDto;
@@ -15,6 +16,8 @@ import by.innowise.userservice.service.PaymentCardService;
 import by.innowise.userservice.specification.PaymentCardSpecifications;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -31,6 +34,7 @@ public class PaymentCardServiceImpl implements PaymentCardService {
     private final PaymentCardRepository paymentCardRepository;
     private final UserRepository userRepository;
     private final PaymentCardMapper paymentCardMapper;
+    private final CacheManager cacheManager;
 
     @Override
     @Transactional
@@ -55,6 +59,8 @@ public class PaymentCardServiceImpl implements PaymentCardService {
         PaymentCard savedPaymentCard =
                 paymentCardRepository.save(paymentCard);
 
+        evictUserDetailsCache(userId);
+
         log.info(
                 "Created payment card with id={} for user with id={}",
                 savedPaymentCard.getId(),
@@ -66,7 +72,8 @@ public class PaymentCardServiceImpl implements PaymentCardService {
 
     @Override
     public PaymentCardResponseDto findById(Long id) {
-        PaymentCard paymentCard = findPaymentCardById(id);
+        PaymentCard paymentCard =
+                findPaymentCardById(id);
 
         return paymentCardMapper.toDto(paymentCard);
     }
@@ -91,11 +98,10 @@ public class PaymentCardServiceImpl implements PaymentCardService {
             Pageable pageable
     ) {
         return paymentCardRepository.findAll(
-                PaymentCardSpecifications
-                        .byOwnerNameAndSurname(
-                                ownerName,
-                                ownerSurname
-                        ),
+                PaymentCardSpecifications.byOwnerNameAndSurname(
+                        ownerName,
+                        ownerSurname
+                ),
                 pageable
         ).map(paymentCardMapper::toDto);
     }
@@ -109,12 +115,22 @@ public class PaymentCardServiceImpl implements PaymentCardService {
         PaymentCard paymentCard =
                 findPaymentCardById(id);
 
-        paymentCardMapper.updateEntity(dto, paymentCard);
+        Long userId = paymentCard.getUser().getId();
+
+        paymentCardMapper.updateEntity(
+                dto,
+                paymentCard
+        );
 
         PaymentCard updatedPaymentCard =
                 paymentCardRepository.save(paymentCard);
 
-        log.info("Updated payment card with id={}", id);
+        evictUserDetailsCache(userId);
+
+        log.info(
+                "Updated payment card with id={}",
+                id
+        );
 
         return paymentCardMapper.toDto(updatedPaymentCard);
     }
@@ -138,6 +154,10 @@ public class PaymentCardServiceImpl implements PaymentCardService {
         PaymentCard updatedPaymentCard =
                 findPaymentCardById(id);
 
+        evictUserDetailsCache(
+                updatedPaymentCard.getUser().getId()
+        );
+
         log.info(
                 "Changed active status for payment card with id={} to {}",
                 id,
@@ -153,9 +173,16 @@ public class PaymentCardServiceImpl implements PaymentCardService {
         PaymentCard paymentCard =
                 findPaymentCardById(id);
 
+        Long userId = paymentCard.getUser().getId();
+
         paymentCardRepository.delete(paymentCard);
 
-        log.info("Deleted payment card with id={}", id);
+        evictUserDetailsCache(userId);
+
+        log.info(
+                "Deleted payment card with id={}",
+                id
+        );
     }
 
     private User findUserById(Long userId) {
@@ -170,5 +197,15 @@ public class PaymentCardServiceImpl implements PaymentCardService {
                 .orElseThrow(
                         () -> new PaymentCardNotFoundException(id)
                 );
+    }
+
+    private void evictUserDetailsCache(Long userId) {
+        Cache cache = cacheManager.getCache(
+                CacheNames.USER_DETAILS
+        );
+
+        if (cache != null) {
+            cache.evict(userId);
+        }
     }
 }
