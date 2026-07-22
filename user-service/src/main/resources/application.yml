@@ -2,6 +2,11 @@ spring:
   application:
     name: user-service
 
+  cache:
+    type: redis
+    cache-names:
+      - user-details
+
   jpa:
     hibernate:
       ddl-auto: validate

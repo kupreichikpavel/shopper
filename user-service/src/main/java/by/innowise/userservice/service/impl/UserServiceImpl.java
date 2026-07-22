@@ -12,10 +12,20 @@ import by.innowise.userservice.service.UserService;
 import by.innowise.userservice.specification.UserSpecifications;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import by.innowise.userservice.cache.CacheNames;
+import by.innowise.userservice.dto.paymentcard.PaymentCardResponseDto;
+import by.innowise.userservice.dto.user.UserDetailsResponseDto;
+import by.innowise.userservice.mapper.PaymentCardMapper;
+import by.innowise.userservice.repository.PaymentCardRepository;
+import org.springframework.cache.annotation.Cacheable;
+
+import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -25,6 +35,8 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final PaymentCardRepository paymentCardRepository;
+    private final PaymentCardMapper paymentCardMapper;
 
     @Override
     @Transactional
@@ -62,7 +74,35 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    @Cacheable(
+            cacheNames = CacheNames.USER_DETAILS,
+            key = "#id"
+    )
+    public UserDetailsResponseDto findDetailsById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(
+                        () -> new UserNotFoundException(id)
+                );
+
+        List<PaymentCardResponseDto> paymentCards =
+                paymentCardRepository.findAllByUser_Id(id)
+                        .stream()
+                        .map(paymentCardMapper::toDto)
+                        .toList();
+
+        return new UserDetailsResponseDto(
+                userMapper.toDto(user),
+                paymentCards
+        );
+    }
+
+    @Override
     @Transactional
+    @CacheEvict(
+            cacheNames = CacheNames.USER_DETAILS,
+            key = "#id"
+    )
     public UserResponseDto update(
             Long id,
             UserUpdateDto dto
@@ -82,6 +122,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    @CacheEvict(
+            cacheNames = CacheNames.USER_DETAILS,
+            key = "#id"
+    )
     public UserResponseDto setActive(
             Long id,
             boolean active
@@ -108,6 +152,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    @CacheEvict(
+            cacheNames = CacheNames.USER_DETAILS,
+            key = "#id"
+    )
     public void delete(Long id) {
         User user = findUserById(id);
 
@@ -129,9 +177,10 @@ public class UserServiceImpl implements UserService {
     ) {
         userRepository.findByEmailIgnoreCase(email)
                 .filter(existingUser ->
-                        currentUserId == null
-                                || !existingUser.getId()
-                                .equals(currentUserId)
+                        !Objects.equals(
+                                existingUser.getId(),
+                                currentUserId
+                        )
                 )
                 .ifPresent(existingUser -> {
                     throw new EmailAlreadyExistsException(email);
