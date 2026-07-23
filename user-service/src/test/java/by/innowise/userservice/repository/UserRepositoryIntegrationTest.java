@@ -40,11 +40,7 @@ class UserRepositoryIntegrationTest {
     void shouldFindUserByEmailIgnoringCase() {
         User user = createUser("pavel@example.com");
         userRepository.saveAndFlush(user);
-
-        User foundUser = userRepository
-                .findByEmailIgnoreCase("PAVEL@EXAMPLE.COM")
-                .orElseThrow();
-
+        User foundUser = userRepository.findByEmailIgnoreCase("PAVEL@EXAMPLE.COM").orElseThrow();
         assertEquals(user.getId(), foundUser.getId());
     }
 
@@ -52,17 +48,9 @@ class UserRepositoryIntegrationTest {
     void shouldDeactivateUser() {
         User user = createUser("active.user@example.com");
         userRepository.saveAndFlush(user);
-
-        int updatedRows = userRepository.updateActiveById(
-                user.getId(),
-                false
-        );
-
+        int updatedRows = userRepository.updateActiveById(user.getId(), false);
         entityManager.clear();
-
-        User updatedUser = userRepository
-                .findById(user.getId())
-                .orElseThrow();
+        User updatedUser = userRepository.findById(user.getId()).orElseThrow();
 
         assertEquals(1, updatedRows);
         assertFalse(updatedUser.isActive());
@@ -72,22 +60,13 @@ class UserRepositoryIntegrationTest {
     void shouldUpdateUserById() {
         User user = createUser("update.user@example.com");
         userRepository.saveAndFlush(user);
-
         Long userId = user.getId();
-
-        User userToUpdate = userRepository
-                .findById(userId)
-                .orElseThrow();
-
+        User userToUpdate = userRepository.findById(userId).orElseThrow();
         userToUpdate.setName("Updated");
         userToUpdate.setSurname("User");
-
         userRepository.saveAndFlush(userToUpdate);
         entityManager.clear();
-
-        User updatedUser = userRepository
-                .findById(userId)
-                .orElseThrow();
+        User updatedUser = userRepository.findById(userId).orElseThrow();
 
         assertEquals("Updated", updatedUser.getName());
         assertEquals("User", updatedUser.getSurname());
@@ -95,89 +74,37 @@ class UserRepositoryIntegrationTest {
 
     @Test
     void shouldFilterUsersByNameAndSurnameWithPagination() {
-        User pavelKupreichik =
-                createUser("pavel.kupreichik@example.com");
+        User pavelKupreichik = createUser("pavel.kupreichik@example.com");
         pavelKupreichik.setName("Pavel");
         pavelKupreichik.setSurname("Kupreichik");
-
-        User annaKupreichik =
-                createUser("anna.kupreichik@example.com");
+        User annaKupreichik = createUser("anna.kupreichik@example.com");
         annaKupreichik.setName("Anna");
         annaKupreichik.setSurname("Kupreichik");
-
-        User pavelIvanov =
-                createUser("pavel.ivanov@example.com");
+        User pavelIvanov = createUser("pavel.ivanov@example.com");
         pavelIvanov.setName("Pavel");
         pavelIvanov.setSurname("Ivanov");
-
-        userRepository.saveAllAndFlush(
-                List.of(
-                        pavelKupreichik,
-                        annaKupreichik,
-                        pavelIvanov
-                )
-        );
-
-        Page<User> firstPage = userRepository.findAll(
-                UserSpecifications.byNameAndSurname(
-                        null,
-                        "KUP"
-                ),
-                PageRequest.of(
-                        0,
-                        1,
-                        Sort.by("email").ascending()
-                )
-        );
-
-        Page<User> secondPage = userRepository.findAll(
-                UserSpecifications.byNameAndSurname(
-                        null,
-                        "kup"
-                ),
-                PageRequest.of(
-                        1,
-                        1,
-                        Sort.by("email").ascending()
-                )
-        );
-
-        Page<User> filteredByBothFields =
-                userRepository.findAll(
-                        UserSpecifications.byNameAndSurname(
-                                "pav",
-                                "kup"
-                        ),
-                        PageRequest.of(0, 10)
-                );
+        userRepository.saveAllAndFlush(List.of(pavelKupreichik, annaKupreichik, pavelIvanov));
+        Page<User> firstPage = userRepository.findAll(UserSpecifications.byNameAndSurname(null, "KUP"),
+                PageRequest.of(0, 1, Sort.by("email").ascending()));
+        Page<User> secondPage = userRepository.findAll(UserSpecifications.byNameAndSurname(null, "kup"),
+                PageRequest.of(1, 1, Sort.by("email").ascending()));
+        Page<User> filteredByBothFields = userRepository.findAll(UserSpecifications.byNameAndSurname("pav", "kup"),
+                PageRequest.of(0, 10));
 
         assertEquals(2, firstPage.getTotalElements());
         assertEquals(2, firstPage.getTotalPages());
         assertEquals(1, firstPage.getContent().size());
         assertTrue(firstPage.hasNext());
-
         assertEquals(1, secondPage.getContent().size());
         assertFalse(secondPage.hasNext());
-
-        assertEquals(
-                1,
-                filteredByBothFields.getTotalElements()
-        );
-
-        assertEquals(
-                "pavel.kupreichik@example.com",
-                filteredByBothFields
-                        .getContent()
-                        .get(0)
-                        .getEmail()
-        );
+        assertEquals(1, filteredByBothFields.getTotalElements());
+        assertEquals("pavel.kupreichik@example.com", filteredByBothFields.getContent().get(0).getEmail());
     }
 
     @Test
     void shouldDeletePaymentCardsWhenUserDeleted() {
         User user = createUser("cascade@example.com");
-        PaymentCard paymentCard =
-                createPaymentCard("4444333322221111");
+        PaymentCard paymentCard = createPaymentCard("4444333322221111");
 
         user.addPaymentCard(paymentCard);
         userRepository.saveAndFlush(user);
@@ -190,8 +117,6 @@ class UserRepositoryIntegrationTest {
         entityManager.clear();
 
         assertFalse(userRepository.existsById(userId));
-        assertFalse(
-                paymentCardRepository.existsById(paymentCardId)
-        );
+        assertFalse(paymentCardRepository.existsById(paymentCardId));
     }
 }

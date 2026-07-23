@@ -41,21 +41,11 @@ class GlobalExceptionHandlerTest {
 
         mockMvc.perform(get("/test/not-found"))
                 .andExpect(status().isNotFound())
-                .andExpect(
-                        content().contentTypeCompatibleWith(
-                                MediaType.APPLICATION_JSON
-                        )
-                )
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.status").value(404))
                 .andExpect(jsonPath("$.error").value("Not Found"))
-                .andExpect(
-                        jsonPath("$.message")
-                                .value(containsString("99"))
-                )
-                .andExpect(
-                        jsonPath("$.path")
-                                .value("/test/not-found")
-                )
+                .andExpect(jsonPath("$.message").value(containsString("99")))
+                .andExpect(jsonPath("$.path").value("/test/not-found"))
                 .andExpect(jsonPath("$.timestamp").exists())
                 .andExpect(jsonPath("$.fieldErrors").isMap())
                 .andExpect(jsonPath("$.fieldErrors").isEmpty());
@@ -67,22 +57,11 @@ class GlobalExceptionHandlerTest {
 
         mockMvc.perform(get("/test/data-conflict"))
                 .andExpect(status().isConflict())
-                .andExpect(
-                        content().contentTypeCompatibleWith(
-                                MediaType.APPLICATION_JSON
-                        )
-                )
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.status").value(409))
                 .andExpect(jsonPath("$.error").value("Conflict"))
-                .andExpect(
-                        jsonPath("$.message").value(
-                                "Request conflicts with existing data"
-                        )
-                )
-                .andExpect(
-                        jsonPath("$.path")
-                                .value("/test/data-conflict")
-                )
+                .andExpect(jsonPath("$.message").value("Request conflicts with existing data"))
+                .andExpect(jsonPath("$.path").value("/test/data-conflict"))
                 .andExpect(jsonPath("$.timestamp").exists());
     }
 
@@ -90,109 +69,41 @@ class GlobalExceptionHandlerTest {
     void shouldReturnBadRequestForInvalidPathVariableType()
             throws Exception {
 
-        mockMvc.perform(
-                        get("/test/numbers/{id}", "not-a-number")
-                )
+        mockMvc.perform(get("/test/numbers/{id}", "not-a-number"))
                 .andExpect(status().isBadRequest())
-                .andExpect(
-                        content().contentTypeCompatibleWith(
-                                MediaType.APPLICATION_JSON
-                        )
-                )
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.status").value(400))
-                .andExpect(
-                        jsonPath("$.error")
-                                .value("Bad Request")
-                )
-                .andExpect(
-                        jsonPath("$.message")
-                                .value(
-                                        "Request contains invalid data"
-                                )
-                )
-                .andExpect(
-                        jsonPath("$.path")
-                                .value(
-                                        "/test/numbers/not-a-number"
-                                )
-                );
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.message").value("Request contains invalid data"))
+                .andExpect(jsonPath("$.path").value("/test/numbers/not-a-number"));
     }
 
     @Test
-    void shouldReturnBadRequestForMalformedJson()
-            throws Exception {
+    void shouldReturnBadRequestForMalformedJson() throws Exception {
 
-        mockMvc.perform(
-                        post("/test/body")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content("""
-                                        {
-                                          "name": "Pavel",
-                                        }
-                                        """)
-                )
+        mockMvc.perform(post("/test/body").contentType(MediaType.APPLICATION_JSON).content("""
+                {
+                  "name": "Pavel",
+                }
+                """))
                 .andExpect(status().isBadRequest())
-                .andExpect(
-                        content().contentTypeCompatibleWith(
-                                MediaType.APPLICATION_JSON
-                        )
-                )
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.status").value(400))
-                .andExpect(
-                        jsonPath("$.error")
-                                .value("Bad Request")
-                )
-                .andExpect(
-                        jsonPath("$.message")
-                                .value(
-                                        "Request contains invalid data"
-                                )
-                )
-                .andExpect(
-                        jsonPath("$.path")
-                                .value("/test/body")
-                );
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.message").value("Request contains invalid data"))
+                .andExpect(jsonPath("$.path").value("/test/body"));
     }
 
     @Test
-    void shouldReturnInternalServerErrorWithoutSensitiveDetails()
-            throws Exception {
-
+    void shouldReturnInternalServerErrorWithoutSensitiveDetails() throws Exception {
         mockMvc.perform(get("/test/unexpected"))
-                .andExpect(
-                        status().isInternalServerError()
-                )
-                .andExpect(
-                        content().contentTypeCompatibleWith(
-                                MediaType.APPLICATION_JSON
-                        )
-                )
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.status").value(500))
-                .andExpect(
-                        jsonPath("$.error")
-                                .value(
-                                        "Internal Server Error"
-                                )
-                )
-                .andExpect(
-                        jsonPath("$.message")
-                                .value(
-                                        "Unexpected internal server error"
-                                )
-                )
-                .andExpect(
-                        jsonPath("$.path")
-                                .value("/test/unexpected")
-                )
-                .andExpect(
-                        content().string(
-                                not(
-                                        containsString(
-                                                "sensitive details"
-                                        )
-                                )
-                        )
-                );
+                .andExpect(jsonPath("$.error").value("Internal Server Error"))
+                .andExpect(jsonPath("$.message").value("Unexpected internal server error"))
+                .andExpect(jsonPath("$.path").value("/test/unexpected"))
+                .andExpect(content().string(not(containsString("sensitive details"))));
     }
 
     @RestController
@@ -206,30 +117,22 @@ class GlobalExceptionHandlerTest {
 
         @GetMapping("/data-conflict")
         String dataConflict() {
-            throw new DataIntegrityViolationException(
-                    "Database constraint details"
-            );
+            throw new DataIntegrityViolationException("Database constraint details");
         }
 
         @GetMapping("/numbers/{id}")
-        String number(
-                @PathVariable Long id
-        ) {
+        String number(@PathVariable Long id) {
             return id.toString();
         }
 
         @PostMapping("/body")
-        String body(
-                @RequestBody UserCreateDto dto
-        ) {
+        String body(@RequestBody UserCreateDto dto) {
             return dto.email();
         }
 
         @GetMapping("/unexpected")
         String unexpected() {
-            throw new IllegalStateException(
-                    "sensitive details"
-            );
+            throw new IllegalStateException("sensitive details");
         }
     }
 }

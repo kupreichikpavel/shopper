@@ -30,43 +30,18 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler({
-            UserNotFoundException.class,
-            PaymentCardNotFoundException.class
-    })
-    public ResponseEntity<ApiErrorResponse> handleNotFound(
-            RuntimeException exception,
-            HttpServletRequest request
-    ) {
-        return buildResponse(
-                HttpStatus.NOT_FOUND,
-                exception.getMessage(),
-                request,
-                Map.of()
-        );
+    @ExceptionHandler({UserNotFoundException.class, PaymentCardNotFoundException.class})
+    public ResponseEntity<ApiErrorResponse> handleNotFound(RuntimeException exception, HttpServletRequest request) {
+        return buildResponse(HttpStatus.NOT_FOUND, exception.getMessage(), request, Map.of());
     }
 
-    @ExceptionHandler({
-            EmailAlreadyExistsException.class,
-            PaymentCardLimitExceededException.class
-    })
-    public ResponseEntity<ApiErrorResponse> handleConflict(
-            RuntimeException exception,
-            HttpServletRequest request
-    ) {
-        return buildResponse(
-                HttpStatus.CONFLICT,
-                exception.getMessage(),
-                request,
-                Map.of()
-        );
+    @ExceptionHandler({EmailAlreadyExistsException.class, PaymentCardLimitExceededException.class})
+    public ResponseEntity<ApiErrorResponse> handleConflict(RuntimeException exception, HttpServletRequest request) {
+        return buildResponse(HttpStatus.CONFLICT, exception.getMessage(), request, Map.of());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiErrorResponse> handleValidation(
-            MethodArgumentNotValidException exception,
-            HttpServletRequest request
-    ) {
+    public ResponseEntity<ApiErrorResponse> handleValidation(MethodArgumentNotValidException exception, HttpServletRequest request) {
         Map<String, List<String>> fieldErrors =
                 exception.getBindingResult()
                         .getFieldErrors()
@@ -83,55 +58,26 @@ public class GlobalExceptionHandler {
                                 )
                         );
 
-        return buildResponse(
-                HttpStatus.BAD_REQUEST,
-                "Request validation failed",
-                request,
-                fieldErrors
-        );
+        return buildResponse(HttpStatus.BAD_REQUEST, "Request validation failed", request, fieldErrors);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<ApiErrorResponse>
-    handleConstraintViolation(
-            ConstraintViolationException exception,
-            HttpServletRequest request
-    ) {
+    public ResponseEntity<ApiErrorResponse> handleConstraintViolation(ConstraintViolationException exception, HttpServletRequest request) {
         Map<String, List<String>> fieldErrors =
                 exception.getConstraintViolations()
                         .stream()
-                        .collect(
-                                Collectors.groupingBy(
-                                        violation ->
-                                                violation
-                                                        .getPropertyPath()
-                                                        .toString(),
-                                        LinkedHashMap::new,
-                                        Collectors.mapping(
-                                                ConstraintViolation
-                                                        ::getMessage,
-                                                Collectors.toList()
-                                        )
-                                )
+                        .collect(Collectors.groupingBy(violation ->
+                                        violation.getPropertyPath().toString(),
+                                LinkedHashMap::new,
+                                Collectors.mapping(ConstraintViolation::getMessage,
+                                        Collectors.toList()))
                         );
 
-        return buildResponse(
-                HttpStatus.BAD_REQUEST,
-                "Request validation failed",
-                request,
-                fieldErrors
-        );
+        return buildResponse(HttpStatus.BAD_REQUEST, "Request validation failed", request, fieldErrors);
     }
 
-    @ExceptionHandler({
-            HttpMessageNotReadableException.class,
-            MethodArgumentTypeMismatchException.class,
-            MissingServletRequestParameterException.class
-    })
-    public ResponseEntity<ApiErrorResponse> handleBadRequest(
-            Exception exception,
-            HttpServletRequest request
-    ) {
+    @ExceptionHandler({HttpMessageNotReadableException.class, MethodArgumentTypeMismatchException.class, MissingServletRequestParameterException.class})
+    public ResponseEntity<ApiErrorResponse> handleBadRequest(Exception exception, HttpServletRequest request) {
         return buildResponse(
                 HttpStatus.BAD_REQUEST,
                 "Request contains invalid data",

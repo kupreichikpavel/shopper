@@ -35,99 +35,43 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<UserResponseDto> create(
-            @Valid @RequestBody UserCreateDto dto
-    ) {
-        UserResponseDto createdUser =
-                userService.create(dto);
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(createdUser);
+    public ResponseEntity<UserResponseDto> create(@Valid @RequestBody UserCreateDto dto) {
+        UserResponseDto createdUser = userService.create(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponseDto> findById(
-            @PathVariable
-            @Positive(message = "User id must be positive")
-            Long id
-    ) {
-        return ResponseEntity.ok(
-                userService.findById(id)
-        );
+    public ResponseEntity<UserResponseDto> findById(@PathVariable @Positive(message = "User id must be positive") Long id) {
+        return ResponseEntity.ok(userService.findById(id));
     }
 
     @GetMapping("/{id}/details")
-    public ResponseEntity<UserDetailsResponseDto> findDetailsById(
-            @PathVariable
-            @Positive(message = "User id must be positive")
-            Long id
-    ) {
-        return ResponseEntity.ok(
-                userService.findDetailsById(id)
-        );
+    public ResponseEntity<UserDetailsResponseDto> findDetailsById(@PathVariable @Positive(message = "User id must be positive") Long id) {
+        return ResponseEntity.ok(userService.findDetailsById(id));
     }
 
     @GetMapping
-    public ResponseEntity<Page<UserResponseDto>> findAll(
-            @RequestParam(required = false)
-            String name,
-
-            @RequestParam(required = false)
-            String surname,
-
-            @PageableDefault(size = 20, sort = "id")
-            Pageable pageable
-    ) {
-        Page<UserResponseDto> users =
-                userService.findAll(
-                        name,
-                        surname,
-                        pageable
-                );
-
+    public ResponseEntity<Page<UserResponseDto>> findAll(@RequestParam(required = false) String name,
+                                                         @RequestParam(required = false) String surname,
+                                                         @PageableDefault(size = 20, sort = "id") Pageable pageable) {
+        Page<UserResponseDto> users = userService.findAll(name, surname, pageable);
         return ResponseEntity.ok(users);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponseDto> update(
-            @PathVariable
-            @Positive(message = "User id must be positive")
-            Long id,
-
-            @Valid @RequestBody UserUpdateDto dto
-    ) {
-        return ResponseEntity.ok(
-                userService.update(id, dto)
-        );
+    public ResponseEntity<UserResponseDto> update(@PathVariable @Positive(message = "User id must be positive") Long id, @Valid @RequestBody UserUpdateDto dto) {
+        return ResponseEntity.ok(userService.update(id, dto));
     }
 
     @PatchMapping("/{id}/active")
-    public ResponseEntity<UserResponseDto> setActive(
-            @PathVariable
-            @Positive(message = "User id must be positive")
-            Long id,
-
-            @Valid
-            @RequestBody
-            ActiveStatusUpdateDto dto
-    ) {
-        return ResponseEntity.ok(
-                userService.setActive(
-                        id,
-                        dto.active()
-                )
-        );
+    public ResponseEntity<UserResponseDto> setActive(@PathVariable @Positive(message = "User id must be positive") Long id,
+                                                     @Valid @RequestBody ActiveStatusUpdateDto dto) {
+        return ResponseEntity.ok(userService.setActive(id, dto.active()));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(
-            @PathVariable
-            @Positive(message = "User id must be positive")
-            Long id
-    ) {
+    public ResponseEntity<Void> delete(@PathVariable @Positive(message = "User id must be positive") Long id) {
         userService.delete(id);
-
         return ResponseEntity.noContent().build();
     }
 }

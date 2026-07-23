@@ -62,13 +62,7 @@ class UserServiceCachingTest {
 
     @BeforeEach
     void setUp() {
-        reset(
-                userRepository,
-                userMapper,
-                paymentCardRepository,
-                paymentCardMapper
-        );
-
+        reset(userRepository, userMapper, paymentCardRepository, paymentCardMapper);
         getUserDetailsCache().clear();
     }
 
@@ -77,35 +71,25 @@ class UserServiceCachingTest {
         User user = createUser();
         UserResponseDto responseDto = createResponseDto();
 
-        when(userRepository.findById(USER_ID))
-                .thenReturn(Optional.of(user));
+        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
 
-        when(paymentCardRepository.findAllByUser_Id(USER_ID))
-                .thenReturn(List.of());
+        when(paymentCardRepository.findAllByUser_Id(USER_ID)).thenReturn(List.of());
 
-        when(userMapper.toDto(user))
-                .thenReturn(responseDto);
+        when(userMapper.toDto(user)).thenReturn(responseDto);
 
-        UserDetailsResponseDto firstResult =
-                userService.findDetailsById(USER_ID);
+        UserDetailsResponseDto firstResult = userService.findDetailsById(USER_ID);
 
-        UserDetailsResponseDto secondResult =
-                userService.findDetailsById(USER_ID);
+        UserDetailsResponseDto secondResult = userService.findDetailsById(USER_ID);
 
         assertEquals(firstResult, secondResult);
 
-        assertNotNull(
-                getUserDetailsCache().get(USER_ID)
-        );
+        assertNotNull(getUserDetailsCache().get(USER_ID));
 
-        verify(userRepository, times(1))
-                .findById(USER_ID);
+        verify(userRepository, times(1)).findById(USER_ID);
 
-        verify(paymentCardRepository, times(1))
-                .findAllByUser_Id(USER_ID);
+        verify(paymentCardRepository, times(1)).findAllByUser_Id(USER_ID);
 
-        verify(userMapper, times(1))
-                .toDto(user);
+        verify(userMapper, times(1)).toDto(user);
     }
 
     @Test
@@ -114,38 +98,27 @@ class UserServiceCachingTest {
         UserResponseDto responseDto = createResponseDto();
         UserUpdateDto updateDto = createUpdateDto();
 
-        when(userRepository.findById(USER_ID))
-                .thenReturn(Optional.of(user));
+        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
 
-        when(paymentCardRepository.findAllByUser_Id(USER_ID))
-                .thenReturn(List.of());
+        when(paymentCardRepository.findAllByUser_Id(USER_ID)).thenReturn(List.of());
 
-        when(userMapper.toDto(user))
-                .thenReturn(responseDto);
+        when(userMapper.toDto(user)).thenReturn(responseDto);
 
-        when(userRepository.findByEmailIgnoreCase(EMAIL))
-                .thenReturn(Optional.of(user));
+        when(userRepository.findByEmailIgnoreCase(EMAIL)).thenReturn(Optional.of(user));
 
-        when(userRepository.save(user))
-                .thenReturn(user);
+        when(userRepository.save(user)).thenReturn(user);
 
         userService.findDetailsById(USER_ID);
 
-        assertNotNull(
-                getUserDetailsCache().get(USER_ID)
-        );
+        assertNotNull(getUserDetailsCache().get(USER_ID));
 
         userService.update(USER_ID, updateDto);
 
-        assertNull(
-                getUserDetailsCache().get(USER_ID)
-        );
+        assertNull(getUserDetailsCache().get(USER_ID));
 
-        verify(userMapper)
-                .updateEntity(updateDto, user);
+        verify(userMapper).updateEntity(updateDto, user);
 
-        verify(userRepository)
-                .save(user);
+        verify(userRepository).save(user);
     }
 
     @Test
@@ -153,46 +126,29 @@ class UserServiceCachingTest {
         User user = createUser();
         UserResponseDto responseDto = createResponseDto();
 
-        when(userRepository.findById(USER_ID))
-                .thenReturn(Optional.of(user));
+        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
 
-        when(paymentCardRepository.findAllByUser_Id(USER_ID))
-                .thenReturn(List.of());
+        when(paymentCardRepository.findAllByUser_Id(USER_ID)).thenReturn(List.of());
 
-        when(userMapper.toDto(user))
-                .thenReturn(responseDto);
+        when(userMapper.toDto(user)).thenReturn(responseDto);
 
         userService.findDetailsById(USER_ID);
 
-        assertNotNull(
-                getUserDetailsCache().get(USER_ID)
-        );
+        assertNotNull(getUserDetailsCache().get(USER_ID));
 
         userService.delete(USER_ID);
 
-        assertNull(
-                getUserDetailsCache().get(USER_ID)
-        );
+        assertNull(getUserDetailsCache().get(USER_ID));
 
-        verify(userRepository)
-                .delete(user);
+        verify(userRepository).delete(user);
     }
 
     private Cache getUserDetailsCache() {
-        return Objects.requireNonNull(
-                cacheManager.getCache(
-                        CacheNames.USER_DETAILS
-                )
-        );
+        return Objects.requireNonNull(cacheManager.getCache(CacheNames.USER_DETAILS));
     }
 
     private UserUpdateDto createUpdateDto() {
-        return new UserUpdateDto(
-                "Pavel",
-                "Kupreichik",
-                LocalDate.of(2006, 1, 1),
-                EMAIL
-        );
+        return new UserUpdateDto("Pavel", "Kupreichik", LocalDate.of(2006, 1, 1), EMAIL);
     }
 
     private User createUser() {
@@ -201,40 +157,17 @@ class UserServiceCachingTest {
         user.setId(USER_ID);
         user.setName("Pavel");
         user.setSurname("Kupreichik");
-        user.setBirthDate(
-                LocalDate.of(2006, 1, 1)
-        );
+        user.setBirthDate(LocalDate.of(2006, 1, 1));
         user.setEmail(EMAIL);
         user.setActive(true);
-        user.setCreatedAt(
-                Instant.parse(
-                        "2026-01-01T10:00:00Z"
-                )
-        );
-        user.setUpdatedAt(
-                Instant.parse(
-                        "2026-01-01T10:00:00Z"
-                )
-        );
+        user.setCreatedAt(Instant.parse("2026-01-01T10:00:00Z"));
+        user.setUpdatedAt(Instant.parse("2026-01-01T10:00:00Z"));
 
         return user;
     }
 
     private UserResponseDto createResponseDto() {
-        return new UserResponseDto(
-                USER_ID,
-                "Pavel",
-                "Kupreichik",
-                LocalDate.of(2006, 1, 1),
-                EMAIL,
-                true,
-                Instant.parse(
-                        "2026-01-01T10:00:00Z"
-                ),
-                Instant.parse(
-                        "2026-01-01T10:00:00Z"
-                )
-        );
+        return new UserResponseDto(USER_ID, "Pavel", "Kupreichik", LocalDate.of(2006, 1, 1), EMAIL, true, Instant.parse("2026-01-01T10:00:00Z"), Instant.parse("2026-01-01T10:00:00Z"));
     }
 
     @Configuration(proxyBeanMethods = false)
@@ -243,9 +176,7 @@ class UserServiceCachingTest {
 
         @Bean
         CacheManager cacheManager() {
-            return new ConcurrentMapCacheManager(
-                    CacheNames.USER_DETAILS
-            );
+            return new ConcurrentMapCacheManager(CacheNames.USER_DETAILS);
         }
 
         @Bean
@@ -269,18 +200,8 @@ class UserServiceCachingTest {
         }
 
         @Bean
-        UserService userService(
-                UserRepository userRepository,
-                UserMapper userMapper,
-                PaymentCardRepository paymentCardRepository,
-                PaymentCardMapper paymentCardMapper
-        ) {
-            return new UserServiceImpl(
-                    userRepository,
-                    userMapper,
-                    paymentCardRepository,
-                    paymentCardMapper
-            );
+        UserService userService(UserRepository userRepository, UserMapper userMapper, PaymentCardRepository paymentCardRepository, PaymentCardMapper paymentCardMapper) {
+            return new UserServiceImpl(userRepository, userMapper, paymentCardRepository, paymentCardMapper);
         }
     }
 }

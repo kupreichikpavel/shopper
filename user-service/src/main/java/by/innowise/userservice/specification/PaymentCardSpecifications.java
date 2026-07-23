@@ -17,54 +17,24 @@ public final class PaymentCardSpecifications {
     private PaymentCardSpecifications() {
     }
 
-    public static Specification<PaymentCard> byOwnerNameAndSurname(
-            String name,
-            String surname
-    ) {
+    public static Specification<PaymentCard> byOwnerNameAndSurname(String name, String surname) {
         return (root, query, criteriaBuilder) -> {
             boolean hasName = StringUtils.hasText(name);
             boolean hasSurname = StringUtils.hasText(surname);
-
             if (!hasName && !hasSurname) {
                 return criteriaBuilder.conjunction();
             }
-
-            Join<PaymentCard, User> userJoin =
-                    root.join("user", JoinType.INNER);
-
+            Join<PaymentCard, User> userJoin = root.join("user", JoinType.INNER);
             List<Predicate> predicates = new ArrayList<>();
-
             if (hasName) {
-                String normalizedName =
-                        name.trim().toLowerCase(Locale.ROOT);
-
-                predicates.add(
-                        criteriaBuilder.like(
-                                criteriaBuilder.lower(
-                                        userJoin.get("name")
-                                ),
-                                "%" + normalizedName + "%"
-                        )
-                );
+                String normalizedName = name.trim().toLowerCase(Locale.ROOT);
+                predicates.add(criteriaBuilder.like(criteriaBuilder.lower(userJoin.get("name")), "%" + normalizedName + "%"));
             }
-
             if (hasSurname) {
-                String normalizedSurname =
-                        surname.trim().toLowerCase(Locale.ROOT);
-
-                predicates.add(
-                        criteriaBuilder.like(
-                                criteriaBuilder.lower(
-                                        userJoin.get("surname")
-                                ),
-                                "%" + normalizedSurname + "%"
-                        )
-                );
+                String normalizedSurname = surname.trim().toLowerCase(Locale.ROOT);
+                predicates.add(criteriaBuilder.like(criteriaBuilder.lower(userJoin.get("surname")), "%" + normalizedSurname + "%"));
             }
-
-            return criteriaBuilder.and(
-                    predicates.toArray(Predicate[]::new)
-            );
+            return criteriaBuilder.and(predicates.toArray(Predicate[]::new));
         };
     }
 }

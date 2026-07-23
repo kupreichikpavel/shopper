@@ -13,21 +13,17 @@ import java.time.Duration;
 @Configuration(proxyBeanMethods = false)
 public class CacheConfig {
 
-    private static final Duration CACHE_TTL =
-            Duration.ofMinutes(10);
+    private static final Duration CACHE_TTL = Duration.ofMinutes(10);
 
     @Bean
     public RedisCacheConfiguration redisCacheConfiguration() {
-        GenericJacksonJsonRedisSerializer serializer =
-                GenericJacksonJsonRedisSerializer
-                        .builder()
-                        .build();
+        GenericJacksonJsonRedisSerializer serializer = GenericJacksonJsonRedisSerializer
+                .builder()
+                .build();
 
-        RedisSerializationContext.SerializationPair<Object>
-                valueSerializationPair =
-                RedisSerializationContext
-                        .fromSerializer(serializer)
-                        .getValueSerializationPair();
+        RedisSerializationContext.SerializationPair<Object> valueSerializationPair = RedisSerializationContext
+                .fromSerializer(serializer)
+                .getValueSerializationPair();
 
         return RedisCacheConfiguration
                 .defaultCacheConfig()

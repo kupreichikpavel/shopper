@@ -13,23 +13,13 @@ public interface UserService {
 
     UserResponseDto findById(Long id);
 
-    Page<UserResponseDto> findAll(
-            String name,
-            String surname,
-            Pageable pageable
-    );
+    Page<UserResponseDto> findAll(String name, String surname, Pageable pageable);
 
     UserDetailsResponseDto findDetailsById(Long id);
 
-    UserResponseDto update(
-            Long id,
-            UserUpdateDto dto
-    );
+    UserResponseDto update(Long id, UserUpdateDto dto);
 
-    UserResponseDto setActive(
-            Long id,
-            boolean active
-    );
+    UserResponseDto setActive(Long id, boolean active);
 
     void delete(Long id);
 }

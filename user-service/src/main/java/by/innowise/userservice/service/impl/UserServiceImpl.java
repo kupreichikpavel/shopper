@@ -30,7 +30,6 @@ import java.util.Objects;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
@@ -42,148 +41,74 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserResponseDto create(UserCreateDto dto) {
         ensureEmailAvailable(dto.email(), null);
-
         User user = userMapper.toEntity(dto);
         User savedUser = userRepository.save(user);
-
         log.info("Created user with id={}", savedUser.getId());
-
         return userMapper.toDto(savedUser);
     }
 
     @Override
     public UserResponseDto findById(Long id) {
         User user = findUserById(id);
-
         return userMapper.toDto(user);
     }
 
     @Override
-    public Page<UserResponseDto> findAll(
-            String name,
-            String surname,
-            Pageable pageable
-    ) {
-        return userRepository.findAll(
-                UserSpecifications.byNameAndSurname(
-                        name,
-                        surname
-                ),
-                pageable
-        ).map(userMapper::toDto);
+    public Page<UserResponseDto> findAll(String name, String surname, Pageable pageable) {
+        return userRepository.findAll(UserSpecifications.byNameAndSurname(name, surname), pageable).map(userMapper::toDto);
     }
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(
-            cacheNames = CacheNames.USER_DETAILS,
-            key = "#id"
-    )
+    @Cacheable(cacheNames = CacheNames.USER_DETAILS, key = "#id")
     public UserDetailsResponseDto findDetailsById(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(
-                        () -> new UserNotFoundException(id)
-                );
-
-        List<PaymentCardResponseDto> paymentCards =
-                paymentCardRepository.findAllByUser_Id(id)
-                        .stream()
-                        .map(paymentCardMapper::toDto)
-                        .toList();
-
-        return new UserDetailsResponseDto(
-                userMapper.toDto(user),
-                paymentCards
-        );
+        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
+        List<PaymentCardResponseDto> paymentCards = paymentCardRepository.findAllByUser_Id(id)
+                .stream().map(paymentCardMapper::toDto).toList();
+        return new UserDetailsResponseDto(userMapper.toDto(user), paymentCards);
     }
 
     @Override
     @Transactional
-    @CacheEvict(
-            cacheNames = CacheNames.USER_DETAILS,
-            key = "#id"
-    )
-    public UserResponseDto update(
-            Long id,
-            UserUpdateDto dto
-    ) {
+    @CacheEvict(cacheNames = CacheNames.USER_DETAILS, key = "#id")
+    public UserResponseDto update(Long id, UserUpdateDto dto) {
         User user = findUserById(id);
-
         ensureEmailAvailable(dto.email(), id);
-
         userMapper.updateEntity(dto, user);
-
         User updatedUser = userRepository.save(user);
-
         log.info("Updated user with id={}", id);
-
         return userMapper.toDto(updatedUser);
     }
 
     @Override
     @Transactional
-    @CacheEvict(
-            cacheNames = CacheNames.USER_DETAILS,
-            key = "#id"
-    )
-    public UserResponseDto setActive(
-            Long id,
-            boolean active
-    ) {
-        int updatedRows = userRepository.updateActiveById(
-                id,
-                active
-        );
-
+    @CacheEvict(cacheNames = CacheNames.USER_DETAILS, key = "#id")
+    public UserResponseDto setActive(Long id, boolean active) {
+        int updatedRows = userRepository.updateActiveById(id, active);
         if (updatedRows == 0) {
             throw new UserNotFoundException(id);
         }
-
         User updatedUser = findUserById(id);
-
-        log.info(
-                "Changed active status for user with id={} to {}",
-                id,
-                active
-        );
-
+        log.info("Changed active status for user with id={} to {}", id, active);
         return userMapper.toDto(updatedUser);
     }
 
     @Override
     @Transactional
-    @CacheEvict(
-            cacheNames = CacheNames.USER_DETAILS,
-            key = "#id"
-    )
+    @CacheEvict(cacheNames = CacheNames.USER_DETAILS, key = "#id")
     public void delete(Long id) {
         User user = findUserById(id);
-
         userRepository.delete(user);
-
         log.info("Deleted user with id={}", id);
     }
 
     private User findUserById(Long id) {
-        return userRepository.findById(id)
-                .orElseThrow(
-                        () -> new UserNotFoundException(id)
-                );
+        return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
     }
 
-    private void ensureEmailAvailable(
-            String email,
-            Long currentUserId
-    ) {
-        userRepository.findByEmailIgnoreCase(email)
-                .filter(existingUser ->
-                        !Objects.equals(
-                                existingUser.getId(),
-                                currentUserId
-                        )
-                )
-                .ifPresent(existingUser -> {
-                    throw new EmailAlreadyExistsException(email);
-                });
+    private void ensureEmailAvailable(String email, Long currentUserId) {
+        userRepository.findByEmailIgnoreCase(email).filter(existingUser -> !Objects.equals(existingUser.getId(), currentUserId)).ifPresent(existingUser -> {
+            throw new EmailAlreadyExistsException(email);
+        });
     }
 }

@@ -10,10 +10,7 @@ import org.mapstruct.MappingConstants;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.ReportingPolicy;
 
-@Mapper(
-        componentModel = MappingConstants.ComponentModel.SPRING,
-        unmappedTargetPolicy = ReportingPolicy.ERROR
-)
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING, unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface UserMapper {
 
     @Mapping(target = "id", ignore = true)
@@ -30,8 +27,5 @@ public interface UserMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "paymentCards", ignore = true)
-    void updateEntity(
-            UserUpdateDto dto,
-            @MappingTarget User user
-    );
+    void updateEntity(UserUpdateDto dto, @MappingTarget User user);
 }

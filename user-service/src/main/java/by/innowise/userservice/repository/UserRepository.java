@@ -9,8 +9,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
-public interface UserRepository
-        extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
+public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
 
     Optional<User> findByEmailIgnoreCase(String email);
 
@@ -20,8 +19,5 @@ public interface UserRepository
             SET user.active = :active
             WHERE user.id = :id
             """)
-    int updateActiveById(
-            @Param("id") Long id,
-            @Param("active") boolean active
-    );
+    int updateActiveById(@Param("id") Long id, @Param("active") boolean active);
 }

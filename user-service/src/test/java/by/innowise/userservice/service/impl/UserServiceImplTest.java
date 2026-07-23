@@ -47,11 +47,9 @@ class UserServiceImplTest {
     private static final Long USER_ID = 1L;
     private static final Long CARD_ID = 10L;
 
-    private static final String EMAIL =
-            "pavel@example.com";
+    private static final String EMAIL = "pavel@example.com";
 
-    private static final String CARD_NUMBER =
-            "1111222233334444";
+    private static final String CARD_NUMBER = "1111222233334444";
 
     @Mock
     private UserRepository userRepository;
@@ -74,34 +72,25 @@ class UserServiceImplTest {
         User user = createUser();
         UserResponseDto responseDto = createResponseDto();
 
-        when(userRepository.findByEmailIgnoreCase(EMAIL))
-                .thenReturn(Optional.empty());
+        when(userRepository.findByEmailIgnoreCase(EMAIL)).thenReturn(Optional.empty());
 
-        when(userMapper.toEntity(createDto))
-                .thenReturn(user);
+        when(userMapper.toEntity(createDto)).thenReturn(user);
 
-        when(userRepository.save(user))
-                .thenReturn(user);
+        when(userRepository.save(user)).thenReturn(user);
 
-        when(userMapper.toDto(user))
-                .thenReturn(responseDto);
+        when(userMapper.toDto(user)).thenReturn(responseDto);
 
-        UserResponseDto result =
-                userService.create(createDto);
+        UserResponseDto result = userService.create(createDto);
 
         assertSame(responseDto, result);
 
-        verify(userRepository)
-                .findByEmailIgnoreCase(EMAIL);
+        verify(userRepository).findByEmailIgnoreCase(EMAIL);
 
-        verify(userMapper)
-                .toEntity(createDto);
+        verify(userMapper).toEntity(createDto);
 
-        verify(userRepository)
-                .save(user);
+        verify(userRepository).save(user);
 
-        verify(userMapper)
-                .toDto(user);
+        verify(userMapper).toDto(user);
     }
 
     @Test
@@ -109,18 +98,13 @@ class UserServiceImplTest {
         UserCreateDto createDto = createUserDto();
         User existingUser = createUser();
 
-        when(userRepository.findByEmailIgnoreCase(EMAIL))
-                .thenReturn(Optional.of(existingUser));
+        when(userRepository.findByEmailIgnoreCase(EMAIL)).thenReturn(Optional.of(existingUser));
 
-        assertThrows(
-                EmailAlreadyExistsException.class,
-                () -> userService.create(createDto)
-        );
+        assertThrows(EmailAlreadyExistsException.class, () -> userService.create(createDto));
 
         verifyNoInteractions(userMapper);
 
-        verify(userRepository, never())
-                .save(any(User.class));
+        verify(userRepository, never()).save(any(User.class));
     }
 
     @Test
@@ -128,118 +112,73 @@ class UserServiceImplTest {
         User user = createUser();
         UserResponseDto responseDto = createResponseDto();
 
-        when(userRepository.findById(USER_ID))
-                .thenReturn(Optional.of(user));
+        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
 
-        when(userMapper.toDto(user))
-                .thenReturn(responseDto);
+        when(userMapper.toDto(user)).thenReturn(responseDto);
 
-        UserResponseDto result =
-                userService.findById(USER_ID);
+        UserResponseDto result = userService.findById(USER_ID);
 
         assertSame(responseDto, result);
 
-        verify(userRepository)
-                .findById(USER_ID);
+        verify(userRepository).findById(USER_ID);
 
-        verify(userMapper)
-                .toDto(user);
+        verify(userMapper).toDto(user);
 
-        verifyNoInteractions(
-                paymentCardRepository,
-                paymentCardMapper
-        );
+        verifyNoInteractions(paymentCardRepository, paymentCardMapper);
     }
 
     @Test
     void shouldThrowExceptionWhenUserNotFound() {
-        when(userRepository.findById(USER_ID))
-                .thenReturn(Optional.empty());
+        when(userRepository.findById(USER_ID)).thenReturn(Optional.empty());
 
-        assertThrows(
-                UserNotFoundException.class,
-                () -> userService.findById(USER_ID)
-        );
+        assertThrows(UserNotFoundException.class, () -> userService.findById(USER_ID));
 
-        verifyNoInteractions(
-                userMapper,
-                paymentCardRepository,
-                paymentCardMapper
-        );
+        verifyNoInteractions(userMapper, paymentCardRepository, paymentCardMapper);
     }
 
     @Test
     void shouldFindUserDetailsById() {
         User user = createUser();
-        UserResponseDto userResponseDto =
-                createResponseDto();
+        UserResponseDto userResponseDto = createResponseDto();
 
-        PaymentCard paymentCard =
-                createPaymentCard(user);
+        PaymentCard paymentCard = createPaymentCard(user);
 
-        PaymentCardResponseDto cardResponseDto =
-                createPaymentCardResponseDto();
+        PaymentCardResponseDto cardResponseDto = createPaymentCardResponseDto();
 
-        when(userRepository.findById(USER_ID))
-                .thenReturn(Optional.of(user));
+        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
 
-        when(paymentCardRepository.findAllByUser_Id(USER_ID))
-                .thenReturn(List.of(paymentCard));
+        when(paymentCardRepository.findAllByUser_Id(USER_ID)).thenReturn(List.of(paymentCard));
 
-        when(userMapper.toDto(user))
-                .thenReturn(userResponseDto);
+        when(userMapper.toDto(user)).thenReturn(userResponseDto);
 
-        when(paymentCardMapper.toDto(paymentCard))
-                .thenReturn(cardResponseDto);
+        when(paymentCardMapper.toDto(paymentCard)).thenReturn(cardResponseDto);
 
-        UserDetailsResponseDto result =
-                userService.findDetailsById(USER_ID);
+        UserDetailsResponseDto result = userService.findDetailsById(USER_ID);
 
-        assertSame(
-                userResponseDto,
-                result.user()
-        );
+        assertSame(userResponseDto, result.user());
 
-        assertEquals(
-                1,
-                result.paymentCards().size()
-        );
+        assertEquals(1, result.paymentCards().size());
 
-        assertSame(
-                cardResponseDto,
-                result.paymentCards().getFirst()
-        );
+        assertSame(cardResponseDto, result.paymentCards().getFirst());
 
-        verify(userRepository)
-                .findById(USER_ID);
+        verify(userRepository).findById(USER_ID);
 
-        verify(paymentCardRepository)
-                .findAllByUser_Id(USER_ID);
+        verify(paymentCardRepository).findAllByUser_Id(USER_ID);
 
-        verify(userMapper)
-                .toDto(user);
+        verify(userMapper).toDto(user);
 
-        verify(paymentCardMapper)
-                .toDto(paymentCard);
+        verify(paymentCardMapper).toDto(paymentCard);
     }
 
     @Test
     void shouldThrowExceptionWhenUserDetailsNotFound() {
-        when(userRepository.findById(USER_ID))
-                .thenReturn(Optional.empty());
+        when(userRepository.findById(USER_ID)).thenReturn(Optional.empty());
 
-        assertThrows(
-                UserNotFoundException.class,
-                () -> userService.findDetailsById(USER_ID)
-        );
+        assertThrows(UserNotFoundException.class, () -> userService.findDetailsById(USER_ID));
 
-        verify(paymentCardRepository, never())
-                .findAllByUser_Id(USER_ID);
+        verify(paymentCardRepository, never()).findAllByUser_Id(USER_ID);
 
-        verifyNoInteractions(
-                userMapper,
-                paymentCardMapper
-        );
+        verifyNoInteractions(userMapper, paymentCardMapper);
     }
 
     @Test
@@ -249,56 +188,25 @@ class UserServiceImplTest {
 
         Pageable pageable = PageRequest.of(0, 10);
 
-        Page<User> users = new PageImpl<>(
-                List.of(user),
-                pageable,
-                1
-        );
+        Page<User> users = new PageImpl<>(List.of(user), pageable, 1);
 
-        when(userRepository.findAll(
-                ArgumentMatchers
-                        .<Specification<User>>any(),
-                eq(pageable)
-        )).thenReturn(users);
+        when(userRepository.findAll(ArgumentMatchers.<Specification<User>>any(), eq(pageable))).thenReturn(users);
 
-        when(userMapper.toDto(user))
-                .thenReturn(responseDto);
+        when(userMapper.toDto(user)).thenReturn(responseDto);
 
-        Page<UserResponseDto> result =
-                userService.findAll(
-                        "Pav",
-                        "Kup",
-                        pageable
-                );
+        Page<UserResponseDto> result = userService.findAll("Pav", "Kup", pageable);
 
-        assertEquals(
-                1,
-                result.getTotalElements()
-        );
+        assertEquals(1, result.getTotalElements());
 
-        assertEquals(
-                1,
-                result.getContent().size()
-        );
+        assertEquals(1, result.getContent().size());
 
-        assertSame(
-                responseDto,
-                result.getContent().getFirst()
-        );
+        assertSame(responseDto, result.getContent().getFirst());
 
-        verify(userRepository).findAll(
-                ArgumentMatchers
-                        .<Specification<User>>any(),
-                eq(pageable)
-        );
+        verify(userRepository).findAll(ArgumentMatchers.<Specification<User>>any(), eq(pageable));
 
-        verify(userMapper)
-                .toDto(user);
+        verify(userMapper).toDto(user);
 
-        verifyNoInteractions(
-                paymentCardRepository,
-                paymentCardMapper
-        );
+        verifyNoInteractions(paymentCardRepository, paymentCardMapper);
     }
 
     @Test
@@ -307,34 +215,23 @@ class UserServiceImplTest {
         User user = createUser();
         UserResponseDto responseDto = createResponseDto();
 
-        when(userRepository.findById(USER_ID))
-                .thenReturn(Optional.of(user));
+        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
 
-        when(userRepository.findByEmailIgnoreCase(EMAIL))
-                .thenReturn(Optional.of(user));
+        when(userRepository.findByEmailIgnoreCase(EMAIL)).thenReturn(Optional.of(user));
 
-        when(userRepository.save(user))
-                .thenReturn(user);
+        when(userRepository.save(user)).thenReturn(user);
 
-        when(userMapper.toDto(user))
-                .thenReturn(responseDto);
+        when(userMapper.toDto(user)).thenReturn(responseDto);
 
-        UserResponseDto result =
-                userService.update(
-                        USER_ID,
-                        updateDto
-                );
+        UserResponseDto result = userService.update(USER_ID, updateDto);
 
         assertSame(responseDto, result);
 
-        verify(userMapper)
-                .updateEntity(updateDto, user);
+        verify(userMapper).updateEntity(updateDto, user);
 
-        verify(userRepository)
-                .save(user);
+        verify(userRepository).save(user);
 
-        verify(userMapper)
-                .toDto(user);
+        verify(userMapper).toDto(user);
     }
 
     @Test
@@ -347,25 +244,15 @@ class UserServiceImplTest {
         User anotherUser = createUser();
         anotherUser.setId(2L);
 
-        when(userRepository.findById(USER_ID))
-                .thenReturn(Optional.of(currentUser));
+        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(currentUser));
 
-        when(userRepository.findByEmailIgnoreCase(EMAIL))
-                .thenReturn(Optional.of(anotherUser));
+        when(userRepository.findByEmailIgnoreCase(EMAIL)).thenReturn(Optional.of(anotherUser));
 
-        assertThrows(
-                EmailAlreadyExistsException.class,
-                () -> userService.update(
-                        USER_ID,
-                        updateDto
-                )
-        );
+        assertThrows(EmailAlreadyExistsException.class, () -> userService.update(USER_ID, updateDto));
 
-        verify(userMapper, never())
-                .updateEntity(any(), any());
+        verify(userMapper, never()).updateEntity(any(), any());
 
-        verify(userRepository, never())
-                .save(any(User.class));
+        verify(userRepository, never()).save(any(User.class));
     }
 
     @Test
@@ -373,67 +260,32 @@ class UserServiceImplTest {
         User user = createUser();
         user.setActive(false);
 
-        UserResponseDto responseDto =
-                new UserResponseDto(
-                        USER_ID,
-                        user.getName(),
-                        user.getSurname(),
-                        user.getBirthDate(),
-                        user.getEmail(),
-                        false,
-                        user.getCreatedAt(),
-                        user.getUpdatedAt()
-                );
+        UserResponseDto responseDto = new UserResponseDto(USER_ID, user.getName(), user.getSurname(), user.getBirthDate(), user.getEmail(), false, user.getCreatedAt(), user.getUpdatedAt());
 
-        when(userRepository.updateActiveById(
-                USER_ID,
-                false
-        )).thenReturn(1);
+        when(userRepository.updateActiveById(USER_ID, false)).thenReturn(1);
 
-        when(userRepository.findById(USER_ID))
-                .thenReturn(Optional.of(user));
+        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
 
-        when(userMapper.toDto(user))
-                .thenReturn(responseDto);
+        when(userMapper.toDto(user)).thenReturn(responseDto);
 
-        UserResponseDto result =
-                userService.setActive(
-                        USER_ID,
-                        false
-                );
+        UserResponseDto result = userService.setActive(USER_ID, false);
 
         assertFalse(result.active());
 
-        verify(userRepository)
-                .updateActiveById(
-                        USER_ID,
-                        false
-                );
+        verify(userRepository).updateActiveById(USER_ID, false);
 
-        verify(userRepository)
-                .findById(USER_ID);
+        verify(userRepository).findById(USER_ID);
 
-        verify(userMapper)
-                .toDto(user);
+        verify(userMapper).toDto(user);
     }
 
     @Test
     void shouldThrowExceptionWhenChangingMissingUser() {
-        when(userRepository.updateActiveById(
-                USER_ID,
-                false
-        )).thenReturn(0);
+        when(userRepository.updateActiveById(USER_ID, false)).thenReturn(0);
 
-        assertThrows(
-                UserNotFoundException.class,
-                () -> userService.setActive(
-                        USER_ID,
-                        false
-                )
-        );
+        assertThrows(UserNotFoundException.class, () -> userService.setActive(USER_ID, false));
 
-        verify(userRepository, never())
-                .findById(USER_ID);
+        verify(userRepository, never()).findById(USER_ID);
 
         verifyNoInteractions(userMapper);
     }
@@ -442,48 +294,30 @@ class UserServiceImplTest {
     void shouldDeleteUser() {
         User user = createUser();
 
-        when(userRepository.findById(USER_ID))
-                .thenReturn(Optional.of(user));
+        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
 
         userService.delete(USER_ID);
 
-        verify(userRepository)
-                .findById(USER_ID);
+        verify(userRepository).findById(USER_ID);
 
-        verify(userRepository)
-                .delete(user);
+        verify(userRepository).delete(user);
     }
 
     @Test
     void shouldThrowExceptionWhenDeletingMissingUser() {
-        when(userRepository.findById(USER_ID))
-                .thenReturn(Optional.empty());
+        when(userRepository.findById(USER_ID)).thenReturn(Optional.empty());
 
-        assertThrows(
-                UserNotFoundException.class,
-                () -> userService.delete(USER_ID)
-        );
+        assertThrows(UserNotFoundException.class, () -> userService.delete(USER_ID));
 
-        verify(userRepository, never())
-                .delete(any(User.class));
+        verify(userRepository, never()).delete(any(User.class));
     }
 
     private UserCreateDto createUserDto() {
-        return new UserCreateDto(
-                "Pavel",
-                "Kupreichik",
-                LocalDate.of(2006, 1, 1),
-                EMAIL
-        );
+        return new UserCreateDto("Pavel", "Kupreichik", LocalDate.of(2006, 1, 1), EMAIL);
     }
 
     private UserUpdateDto createUpdateDto() {
-        return new UserUpdateDto(
-                "Pavel",
-                "Kupreichik",
-                LocalDate.of(2006, 1, 1),
-                EMAIL
-        );
+        return new UserUpdateDto("Pavel", "Kupreichik", LocalDate.of(2006, 1, 1), EMAIL);
     }
 
     private User createUser() {
@@ -492,85 +326,35 @@ class UserServiceImplTest {
         user.setId(USER_ID);
         user.setName("Pavel");
         user.setSurname("Kupreichik");
-        user.setBirthDate(
-                LocalDate.of(2006, 1, 1)
-        );
+        user.setBirthDate(LocalDate.of(2006, 1, 1));
         user.setEmail(EMAIL);
         user.setActive(true);
-        user.setCreatedAt(
-                Instant.parse(
-                        "2026-01-01T10:00:00Z"
-                )
-        );
-        user.setUpdatedAt(
-                Instant.parse(
-                        "2026-01-01T10:00:00Z"
-                )
-        );
+        user.setCreatedAt(Instant.parse("2026-01-01T10:00:00Z"));
+        user.setUpdatedAt(Instant.parse("2026-01-01T10:00:00Z"));
 
         return user;
     }
 
     private PaymentCard createPaymentCard(User user) {
-        PaymentCard paymentCard =
-                new PaymentCard();
+        PaymentCard paymentCard = new PaymentCard();
 
         paymentCard.setId(CARD_ID);
         paymentCard.setNumber(CARD_NUMBER);
-        paymentCard.setHolder(
-                "PAVEL KUPREICHIK"
-        );
-        paymentCard.setExpirationDate(
-                LocalDate.of(2030, 12, 31)
-        );
+        paymentCard.setHolder("PAVEL KUPREICHIK");
+        paymentCard.setExpirationDate(LocalDate.of(2030, 12, 31));
         paymentCard.setActive(true);
         paymentCard.setUser(user);
-        paymentCard.setCreatedAt(
-                Instant.parse(
-                        "2026-01-01T10:00:00Z"
-                )
-        );
-        paymentCard.setUpdatedAt(
-                Instant.parse(
-                        "2026-01-01T10:00:00Z"
-                )
-        );
+        paymentCard.setCreatedAt(Instant.parse("2026-01-01T10:00:00Z"));
+        paymentCard.setUpdatedAt(Instant.parse("2026-01-01T10:00:00Z"));
 
         return paymentCard;
     }
 
     private UserResponseDto createResponseDto() {
-        return new UserResponseDto(
-                USER_ID,
-                "Pavel",
-                "Kupreichik",
-                LocalDate.of(2006, 1, 1),
-                EMAIL,
-                true,
-                Instant.parse(
-                        "2026-01-01T10:00:00Z"
-                ),
-                Instant.parse(
-                        "2026-01-01T10:00:00Z"
-                )
-        );
+        return new UserResponseDto(USER_ID, "Pavel", "Kupreichik", LocalDate.of(2006, 1, 1), EMAIL, true, Instant.parse("2026-01-01T10:00:00Z"), Instant.parse("2026-01-01T10:00:00Z"));
     }
 
-    private PaymentCardResponseDto
-    createPaymentCardResponseDto() {
-        return new PaymentCardResponseDto(
-                CARD_ID,
-                CARD_NUMBER,
-                "PAVEL KUPREICHIK",
-                LocalDate.of(2030, 12, 31),
-                true,
-                USER_ID,
-                Instant.parse(
-                        "2026-01-01T10:00:00Z"
-                ),
-                Instant.parse(
-                        "2026-01-01T10:00:00Z"
-                )
-        );
+    private PaymentCardResponseDto createPaymentCardResponseDto() {
+        return new PaymentCardResponseDto(CARD_ID, CARD_NUMBER, "PAVEL KUPREICHIK", LocalDate.of(2030, 12, 31), true, USER_ID, Instant.parse("2026-01-01T10:00:00Z"), Instant.parse("2026-01-01T10:00:00Z"));
     }
 }

@@ -26,8 +26,7 @@ class DtoValidationTest {
 
     @BeforeAll
     static void setUpValidator() {
-        validatorFactory =
-                Validation.buildDefaultValidatorFactory();
+        validatorFactory = Validation.buildDefaultValidatorFactory();
 
         validator = validatorFactory.getValidator();
     }
@@ -39,15 +38,9 @@ class DtoValidationTest {
 
     @Test
     void shouldRejectInvalidUserCreateDto() {
-        UserCreateDto dto = new UserCreateDto(
-                " ",
-                "",
-                LocalDate.now().plusDays(1),
-                "invalid-email"
-        );
+        UserCreateDto dto = new UserCreateDto(" ", "", LocalDate.now().plusDays(1), "invalid-email");
 
-        Set<String> invalidFields =
-                getInvalidFields(dto);
+        Set<String> invalidFields = getInvalidFields(dto);
 
         assertTrue(invalidFields.contains("name"));
         assertTrue(invalidFields.contains("surname"));
@@ -57,97 +50,49 @@ class DtoValidationTest {
 
     @Test
     void shouldAcceptValidUserCreateDto() {
-        UserCreateDto dto = new UserCreateDto(
-                "Pavel",
-                "Kupreichik",
-                LocalDate.of(2006, 1, 1),
-                "pavel@example.com"
-        );
+        UserCreateDto dto = new UserCreateDto("Pavel", "Kupreichik", LocalDate.of(2006, 1, 1), "pavel@example.com");
 
         assertTrue(validator.validate(dto).isEmpty());
     }
 
     @Test
     void shouldRejectInvalidUserUpdateDto() {
-        UserUpdateDto dto = new UserUpdateDto(
-                "",
-                " ",
-                LocalDate.now().plusYears(1),
-                "wrong"
-        );
+        UserUpdateDto dto = new UserUpdateDto("", " ", LocalDate.now().plusYears(1), "wrong");
 
-        Set<String> invalidFields =
-                getInvalidFields(dto);
+        Set<String> invalidFields = getInvalidFields(dto);
 
-        assertEquals(
-                Set.of(
-                        "name",
-                        "surname",
-                        "birthDate",
-                        "email"
-                ),
-                invalidFields
-        );
+        assertEquals(Set.of("name", "surname", "birthDate", "email"), invalidFields);
     }
 
     @Test
     void shouldRejectInvalidPaymentCardCreateDto() {
-        PaymentCardCreateDto dto =
-                new PaymentCardCreateDto(
-                        "123-456",
-                        " ",
-                        LocalDate.now().minusDays(1)
-                );
-
-        Set<String> invalidFields =
-                getInvalidFields(dto);
+        PaymentCardCreateDto dto = new PaymentCardCreateDto("123-456", " ", LocalDate.now().minusDays(1));
+        Set<String> invalidFields = getInvalidFields(dto);
 
         assertTrue(invalidFields.contains("number"));
         assertTrue(invalidFields.contains("holder"));
-        assertTrue(
-                invalidFields.contains("expirationDate")
-        );
+        assertTrue(invalidFields.contains("expirationDate"));
     }
 
     @Test
     void shouldAcceptValidPaymentCardCreateDto() {
-        PaymentCardCreateDto dto =
-                new PaymentCardCreateDto(
-                        "1111222233334444",
-                        "PAVEL KUPREICHIK",
-                        LocalDate.now().plusYears(3)
-                );
+        PaymentCardCreateDto dto = new PaymentCardCreateDto("1111222233334444", "PAVEL KUPREICHIK", LocalDate.now().plusYears(3));
 
         assertTrue(validator.validate(dto).isEmpty());
     }
 
     @Test
     void shouldRejectInvalidPaymentCardUpdateDto() {
-        PaymentCardUpdateDto dto =
-                new PaymentCardUpdateDto(
-                        "123",
-                        "",
-                        LocalDate.now()
-                );
+        PaymentCardUpdateDto dto = new PaymentCardUpdateDto("123", "", LocalDate.now());
+        Set<String> invalidFields = getInvalidFields(dto);
 
-        Set<String> invalidFields =
-                getInvalidFields(dto);
-
-        assertEquals(
-                Set.of(
-                        "number",
-                        "holder",
-                        "expirationDate"
-                ),
-                invalidFields
-        );
+        assertEquals(Set.of("number", "holder", "expirationDate"), invalidFields);
     }
 
     private Set<String> getInvalidFields(Object dto) {
         return validator.validate(dto)
-                .stream()
-                .map(ConstraintViolation::getPropertyPath)
-                .map(Object::toString)
-                .collect(Collectors.toSet());
+                .stream().
+                map(ConstraintViolation::getPropertyPath)
+                .map(Object::toString).collect(Collectors.toSet());
     }
 }

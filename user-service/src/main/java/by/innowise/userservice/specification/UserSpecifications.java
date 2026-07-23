@@ -14,44 +14,23 @@ public final class UserSpecifications {
     private UserSpecifications() {
     }
 
-    public static Specification<User> byNameAndSurname(
-            String name,
-            String surname
-    ) {
+    public static Specification<User> byNameAndSurname(String name, String surname) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
-
             if (StringUtils.hasText(name)) {
-                String normalizedName =
-                        name.trim().toLowerCase(Locale.ROOT);
+                String normalizedName = name.trim().toLowerCase(Locale.ROOT);
 
-                predicates.add(
-                        criteriaBuilder.like(
-                                criteriaBuilder.lower(root.get("name")),
-                                "%" + normalizedName + "%"
-                        )
-                );
+                predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), "%" + normalizedName + "%"));
             }
-
             if (StringUtils.hasText(surname)) {
-                String normalizedSurname =
-                        surname.trim().toLowerCase(Locale.ROOT);
+                String normalizedSurname = surname.trim().toLowerCase(Locale.ROOT);
 
-                predicates.add(
-                        criteriaBuilder.like(
-                                criteriaBuilder.lower(root.get("surname")),
-                                "%" + normalizedSurname + "%"
-                        )
-                );
+                predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("surname")), "%" + normalizedSurname + "%"));
             }
-
             if (predicates.isEmpty()) {
                 return criteriaBuilder.conjunction();
             }
-
-            return criteriaBuilder.and(
-                    predicates.toArray(Predicate[]::new)
-            );
+            return criteriaBuilder.and(predicates.toArray(Predicate[]::new));
         };
     }
 }

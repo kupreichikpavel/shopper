@@ -10,30 +10,17 @@ import java.util.List;
 
 public interface PaymentCardService {
 
-    PaymentCardResponseDto create(
-            Long userId,
-            PaymentCardCreateDto dto
-    );
+    PaymentCardResponseDto create(Long userId, PaymentCardCreateDto dto);
 
     PaymentCardResponseDto findById(Long id);
 
     List<PaymentCardResponseDto> findAllByUserId(Long userId);
 
-    Page<PaymentCardResponseDto> findAll(
-            String ownerName,
-            String ownerSurname,
-            Pageable pageable
-    );
+    Page<PaymentCardResponseDto> findAll(String ownerName, String ownerSurname, Pageable pageable);
 
-    PaymentCardResponseDto update(
-            Long id,
-            PaymentCardUpdateDto dto
-    );
+    PaymentCardResponseDto update(Long id, PaymentCardUpdateDto dto);
 
-    PaymentCardResponseDto setActive(
-            Long id,
-            boolean active
-    );
+    PaymentCardResponseDto setActive(Long id, boolean active);
 
     void delete(Long id);
 }

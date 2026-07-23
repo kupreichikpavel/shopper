@@ -18,26 +18,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class UserMapperTest {
 
-    private final UserMapper userMapper =
-            Mappers.getMapper(UserMapper.class);
+    private final UserMapper userMapper = Mappers.getMapper(UserMapper.class);
 
     @Test
     void shouldMapCreateDtoToEntity() {
-        UserCreateDto dto = new UserCreateDto(
-                "Pavel",
-                "Kupreichik",
-                LocalDate.of(2006, 1, 1),
-                "pavel@example.com"
-        );
+        UserCreateDto dto = new UserCreateDto("Pavel", "Kupreichik", LocalDate.of(2006, 1, 1), "pavel@example.com");
 
         User user = userMapper.toEntity(dto);
 
         assertEquals("Pavel", user.getName());
         assertEquals("Kupreichik", user.getSurname());
-        assertEquals(
-                LocalDate.of(2006, 1, 1),
-                user.getBirthDate()
-        );
+        assertEquals(LocalDate.of(2006, 1, 1), user.getBirthDate());
         assertEquals("pavel@example.com", user.getEmail());
 
         assertNull(user.getId());
@@ -72,21 +63,13 @@ class UserMapperTest {
         Long originalId = user.getId();
         Instant originalCreatedAt = user.getCreatedAt();
 
-        UserUpdateDto dto = new UserUpdateDto(
-                "Alexey",
-                "Ivanov",
-                LocalDate.of(2005, 5, 10),
-                "alexey@example.com"
-        );
+        UserUpdateDto dto = new UserUpdateDto("Alexey", "Ivanov", LocalDate.of(2005, 5, 10), "alexey@example.com");
 
         userMapper.updateEntity(dto, user);
 
         assertEquals("Alexey", user.getName());
         assertEquals("Ivanov", user.getSurname());
-        assertEquals(
-                LocalDate.of(2005, 5, 10),
-                user.getBirthDate()
-        );
+        assertEquals(LocalDate.of(2005, 5, 10), user.getBirthDate());
         assertEquals("alexey@example.com", user.getEmail());
 
         assertEquals(originalId, user.getId());
@@ -94,10 +77,7 @@ class UserMapperTest {
         assertTrue(user.isActive());
 
         assertEquals(1, user.getPaymentCards().size());
-        assertSame(
-                paymentCard,
-                user.getPaymentCards().getFirst()
-        );
+        assertSame(paymentCard, user.getPaymentCards().getFirst());
     }
 
     private User createUser() {
@@ -108,12 +88,8 @@ class UserMapperTest {
         user.setBirthDate(LocalDate.of(2006, 1, 1));
         user.setEmail("pavel@example.com");
         user.setActive(true);
-        user.setCreatedAt(
-                Instant.parse("2026-01-01T10:00:00Z")
-        );
-        user.setUpdatedAt(
-                Instant.parse("2026-01-02T10:00:00Z")
-        );
+        user.setCreatedAt(Instant.parse("2026-01-01T10:00:00Z"));
+        user.setUpdatedAt(Instant.parse("2026-01-02T10:00:00Z"));
         return user;
     }
 }

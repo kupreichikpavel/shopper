@@ -28,7 +28,6 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class PaymentCardServiceImpl implements PaymentCardService {
 
     private final PaymentCardRepository paymentCardRepository;
@@ -38,172 +37,84 @@ public class PaymentCardServiceImpl implements PaymentCardService {
 
     @Override
     @Transactional
-    public PaymentCardResponseDto create(
-            Long userId,
-            PaymentCardCreateDto dto
-    ) {
+    public PaymentCardResponseDto create(Long userId, PaymentCardCreateDto dto) {
         User user = findUserById(userId);
-
-        long cardsCount =
-                paymentCardRepository.countCardsByUserId(userId);
-
+        long cardsCount = paymentCardRepository.countCardsByUserId(userId);
         if (cardsCount >= User.MAX_PAYMENT_CARDS) {
             throw new PaymentCardLimitExceededException(userId);
         }
 
-        PaymentCard paymentCard =
-                paymentCardMapper.toEntity(dto);
-
+        PaymentCard paymentCard = paymentCardMapper.toEntity(dto);
         user.addPaymentCard(paymentCard);
-
-        PaymentCard savedPaymentCard =
-                paymentCardRepository.save(paymentCard);
-
+        PaymentCard savedPaymentCard = paymentCardRepository.save(paymentCard);
         evictUserDetailsCache(userId);
-
-        log.info(
-                "Created payment card with id={} for user with id={}",
-                savedPaymentCard.getId(),
-                userId
-        );
-
+        log.info("Created payment card with id={} for user with id={}", savedPaymentCard.getId(), userId);
         return paymentCardMapper.toDto(savedPaymentCard);
     }
 
     @Override
     public PaymentCardResponseDto findById(Long id) {
-        PaymentCard paymentCard =
-                findPaymentCardById(id);
-
+        PaymentCard paymentCard = findPaymentCardById(id);
         return paymentCardMapper.toDto(paymentCard);
     }
 
     @Override
-    public List<PaymentCardResponseDto> findAllByUserId(
-            Long userId
-    ) {
+    public List<PaymentCardResponseDto> findAllByUserId(Long userId) {
         findUserById(userId);
-
-        return paymentCardRepository
-                .findAllByUser_Id(userId)
-                .stream()
-                .map(paymentCardMapper::toDto)
-                .toList();
+        return paymentCardRepository.findAllByUser_Id(userId).stream().map(paymentCardMapper::toDto).toList();
     }
 
     @Override
-    public Page<PaymentCardResponseDto> findAll(
-            String ownerName,
-            String ownerSurname,
-            Pageable pageable
-    ) {
-        return paymentCardRepository.findAll(
-                PaymentCardSpecifications.byOwnerNameAndSurname(
-                        ownerName,
-                        ownerSurname
-                ),
-                pageable
-        ).map(paymentCardMapper::toDto);
+    public Page<PaymentCardResponseDto> findAll(String ownerName, String ownerSurname, Pageable pageable) {
+        return paymentCardRepository.findAll(PaymentCardSpecifications.byOwnerNameAndSurname(ownerName, ownerSurname), pageable)
+                .map(paymentCardMapper::toDto);
     }
 
     @Override
     @Transactional
-    public PaymentCardResponseDto update(
-            Long id,
-            PaymentCardUpdateDto dto
-    ) {
-        PaymentCard paymentCard =
-                findPaymentCardById(id);
-
+    public PaymentCardResponseDto update(Long id, PaymentCardUpdateDto dto) {
+        PaymentCard paymentCard = findPaymentCardById(id);
         Long userId = paymentCard.getUser().getId();
-
-        paymentCardMapper.updateEntity(
-                dto,
-                paymentCard
-        );
-
-        PaymentCard updatedPaymentCard =
-                paymentCardRepository.save(paymentCard);
-
+        paymentCardMapper.updateEntity(dto, paymentCard);
+        PaymentCard updatedPaymentCard = paymentCardRepository.save(paymentCard);
         evictUserDetailsCache(userId);
-
-        log.info(
-                "Updated payment card with id={}",
-                id
-        );
-
+        log.info("Updated payment card with id={}", id);
         return paymentCardMapper.toDto(updatedPaymentCard);
     }
 
     @Override
     @Transactional
-    public PaymentCardResponseDto setActive(
-            Long id,
-            boolean active
-    ) {
-        int updatedRows =
-                paymentCardRepository.updateActiveById(
-                        id,
-                        active
-                );
-
+    public PaymentCardResponseDto setActive(Long id, boolean active) {
+        int updatedRows = paymentCardRepository.updateActiveById(id, active);
         if (updatedRows == 0) {
             throw new PaymentCardNotFoundException(id);
         }
-
-        PaymentCard updatedPaymentCard =
-                findPaymentCardById(id);
-
-        evictUserDetailsCache(
-                updatedPaymentCard.getUser().getId()
-        );
-
-        log.info(
-                "Changed active status for payment card with id={} to {}",
-                id,
-                active
-        );
-
+        PaymentCard updatedPaymentCard = findPaymentCardById(id);
+        evictUserDetailsCache(updatedPaymentCard.getUser().getId());
+        log.info("Changed active status for payment card with id={} to {}", id, active);
         return paymentCardMapper.toDto(updatedPaymentCard);
     }
 
     @Override
     @Transactional
     public void delete(Long id) {
-        PaymentCard paymentCard =
-                findPaymentCardById(id);
-
+        PaymentCard paymentCard = findPaymentCardById(id);
         Long userId = paymentCard.getUser().getId();
-
         paymentCardRepository.delete(paymentCard);
-
         evictUserDetailsCache(userId);
-
-        log.info(
-                "Deleted payment card with id={}",
-                id
-        );
+        log.info("Deleted payment card with id={}", id);
     }
 
     private User findUserById(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(
-                        () -> new UserNotFoundException(userId)
-                );
+        return userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
     }
 
     private PaymentCard findPaymentCardById(Long id) {
-        return paymentCardRepository.findById(id)
-                .orElseThrow(
-                        () -> new PaymentCardNotFoundException(id)
-                );
+        return paymentCardRepository.findById(id).orElseThrow(() -> new PaymentCardNotFoundException(id));
     }
 
     private void evictUserDetailsCache(Long userId) {
-        Cache cache = cacheManager.getCache(
-                CacheNames.USER_DETAILS
-        );
-
+        Cache cache = cacheManager.getCache(CacheNames.USER_DETAILS);
         if (cache != null) {
             cache.evict(userId);
         }
