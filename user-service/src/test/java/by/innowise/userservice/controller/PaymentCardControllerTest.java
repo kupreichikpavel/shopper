@@ -34,6 +34,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 
 @WebMvcTest(PaymentCardController.class)
 @Import(GlobalExceptionHandler.class)
@@ -47,6 +48,10 @@ class PaymentCardControllerTest {
 
     @MockitoBean
     private PaymentCardService paymentCardService;
+
+    @SuppressWarnings("unused")
+    @MockitoBean(name = "jpaMappingContext")
+    private JpaMetamodelMappingContext jpaMappingContext;
 
     @Test
     void shouldCreatePaymentCard() throws Exception {
