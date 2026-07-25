@@ -1,8 +1,7 @@
 package by.innowise.userservice.mapper;
 
-import by.innowise.userservice.dto.user.UserCreateDto;
+import by.innowise.userservice.dto.user.UserRequestDto;
 import by.innowise.userservice.dto.user.UserResponseDto;
-import by.innowise.userservice.dto.user.UserUpdateDto;
 import by.innowise.userservice.entity.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -18,7 +17,7 @@ public interface UserMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "paymentCards", ignore = true)
-    User toEntity(UserCreateDto dto);
+    User toEntity(UserRequestDto dto);
 
     UserResponseDto toDto(User user);
 
@@ -27,5 +26,5 @@ public interface UserMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "paymentCards", ignore = true)
-    void updateEntity(UserUpdateDto dto, @MappingTarget User user);
+    void updateEntity(UserRequestDto dto, @MappingTarget User user);
 }

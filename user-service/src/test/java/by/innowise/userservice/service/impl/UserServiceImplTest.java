@@ -1,10 +1,9 @@
 package by.innowise.userservice.service.impl;
 
 import by.innowise.userservice.dto.paymentcard.PaymentCardResponseDto;
-import by.innowise.userservice.dto.user.UserCreateDto;
 import by.innowise.userservice.dto.user.UserDetailsResponseDto;
+import by.innowise.userservice.dto.user.UserRequestDto;
 import by.innowise.userservice.dto.user.UserResponseDto;
-import by.innowise.userservice.dto.user.UserUpdateDto;
 import by.innowise.userservice.entity.PaymentCard;
 import by.innowise.userservice.entity.User;
 import by.innowise.userservice.exception.EmailAlreadyExistsException;
@@ -68,7 +67,7 @@ class UserServiceImplTest {
 
     @Test
     void shouldCreateUser() {
-        UserCreateDto createDto = createUserDto();
+        UserRequestDto createDto = createUserDto();
         User user = createUser();
         UserResponseDto responseDto = createResponseDto();
 
@@ -95,7 +94,7 @@ class UserServiceImplTest {
 
     @Test
     void shouldRejectUserWithExistingEmail() {
-        UserCreateDto createDto = createUserDto();
+        UserRequestDto createDto = createUserDto();
         User existingUser = createUser();
 
         when(userRepository.findByEmailIgnoreCase(EMAIL)).thenReturn(Optional.of(existingUser));
@@ -211,7 +210,7 @@ class UserServiceImplTest {
 
     @Test
     void shouldUpdateUser() {
-        UserUpdateDto updateDto = createUpdateDto();
+        UserRequestDto updateDto = createUpdateDto();
         User user = createUser();
         UserResponseDto responseDto = createResponseDto();
 
@@ -236,7 +235,7 @@ class UserServiceImplTest {
 
     @Test
     void shouldRejectEmailBelongingToAnotherUser() {
-        UserUpdateDto updateDto = createUpdateDto();
+        UserRequestDto updateDto = createUpdateDto();
 
         User currentUser = createUser();
         currentUser.setId(USER_ID);
@@ -312,12 +311,12 @@ class UserServiceImplTest {
         verify(userRepository, never()).delete(any(User.class));
     }
 
-    private UserCreateDto createUserDto() {
-        return new UserCreateDto("Pavel", "Kupreichik", LocalDate.of(2006, 1, 1), EMAIL);
+    private UserRequestDto createUserDto() {
+        return new UserRequestDto("Pavel", "Kupreichik", LocalDate.of(2006, 1, 1), EMAIL);
     }
 
-    private UserUpdateDto createUpdateDto() {
-        return new UserUpdateDto("Pavel", "Kupreichik", LocalDate.of(2006, 1, 1), EMAIL);
+    private UserRequestDto createUpdateDto() {
+        return new UserRequestDto("Pavel", "Kupreichik", LocalDate.of(2006, 1, 1), EMAIL);
     }
 
     private User createUser() {

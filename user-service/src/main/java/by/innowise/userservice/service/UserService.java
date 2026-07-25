@@ -1,15 +1,14 @@
 package by.innowise.userservice.service;
 
-import by.innowise.userservice.dto.user.UserCreateDto;
 import by.innowise.userservice.dto.user.UserDetailsResponseDto;
+import by.innowise.userservice.dto.user.UserRequestDto;
 import by.innowise.userservice.dto.user.UserResponseDto;
-import by.innowise.userservice.dto.user.UserUpdateDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface UserService {
 
-    UserResponseDto create(UserCreateDto dto);
+    UserResponseDto create(UserRequestDto dto);
 
     UserResponseDto findById(Long id);
 
@@ -17,7 +16,7 @@ public interface UserService {
 
     UserDetailsResponseDto findDetailsById(Long id);
 
-    UserResponseDto update(Long id, UserUpdateDto dto);
+    UserResponseDto update(Long id, UserRequestDto dto);
 
     UserResponseDto setActive(Long id, boolean active);
 

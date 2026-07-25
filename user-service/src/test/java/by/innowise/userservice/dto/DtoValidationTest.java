@@ -1,9 +1,7 @@
 package by.innowise.userservice.dto;
 
-import by.innowise.userservice.dto.paymentcard.PaymentCardCreateDto;
-import by.innowise.userservice.dto.paymentcard.PaymentCardUpdateDto;
-import by.innowise.userservice.dto.user.UserCreateDto;
-import by.innowise.userservice.dto.user.UserUpdateDto;
+import by.innowise.userservice.dto.paymentcard.PaymentCardRequestDto;
+import by.innowise.userservice.dto.user.UserRequestDto;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -37,8 +35,8 @@ class DtoValidationTest {
     }
 
     @Test
-    void shouldRejectInvalidUserCreateDto() {
-        UserCreateDto dto = new UserCreateDto(" ", "", LocalDate.now().plusDays(1), "invalid-email");
+    void shouldRejectInvalidUserRequestDtoCreated() {
+        UserRequestDto dto = new UserRequestDto(" ", "", LocalDate.now().plusDays(1), "invalid-email");
 
         Set<String> invalidFields = getInvalidFields(dto);
 
@@ -49,15 +47,15 @@ class DtoValidationTest {
     }
 
     @Test
-    void shouldAcceptValidUserCreateDto() {
-        UserCreateDto dto = new UserCreateDto("Pavel", "Kupreichik", LocalDate.of(2006, 1, 1), "pavel@example.com");
+    void shouldAcceptValidUserRequestDtoUpdate() {
+        UserRequestDto dto = new UserRequestDto("Pavel", "Kupreichik", LocalDate.of(2006, 1, 1), "pavel@example.com");
 
         assertTrue(validator.validate(dto).isEmpty());
     }
 
     @Test
-    void shouldRejectInvalidUserUpdateDto() {
-        UserUpdateDto dto = new UserUpdateDto("", " ", LocalDate.now().plusYears(1), "wrong");
+    void shouldRejectInvalidUserRequestDto() {
+        UserRequestDto dto = new UserRequestDto("", " ", LocalDate.now().plusYears(1), "wrong");
 
         Set<String> invalidFields = getInvalidFields(dto);
 
@@ -65,8 +63,8 @@ class DtoValidationTest {
     }
 
     @Test
-    void shouldRejectInvalidPaymentCardCreateDto() {
-        PaymentCardCreateDto dto = new PaymentCardCreateDto("123-456", " ", LocalDate.now().minusDays(1));
+    void shouldRejectInvalidPaymentCardRequestDtoCreated() {
+        PaymentCardRequestDto dto = new PaymentCardRequestDto("123-456", " ", LocalDate.now().minusDays(1));
         Set<String> invalidFields = getInvalidFields(dto);
 
         assertTrue(invalidFields.contains("number"));
@@ -75,15 +73,15 @@ class DtoValidationTest {
     }
 
     @Test
-    void shouldAcceptValidPaymentCardCreateDto() {
-        PaymentCardCreateDto dto = new PaymentCardCreateDto("1111222233334444", "PAVEL KUPREICHIK", LocalDate.now().plusYears(3));
+    void shouldAcceptValidPaymentCardRequestDto() {
+        PaymentCardRequestDto dto = new PaymentCardRequestDto("1111222233334444", "PAVEL KUPREICHIK", LocalDate.now().plusYears(3));
 
         assertTrue(validator.validate(dto).isEmpty());
     }
 
     @Test
-    void shouldRejectInvalidPaymentCardUpdateDto() {
-        PaymentCardUpdateDto dto = new PaymentCardUpdateDto("123", "", LocalDate.now());
+    void shouldRejectInvalidPaymentCardRequestDtoUpdate() {
+        PaymentCardRequestDto dto = new PaymentCardRequestDto("123", "", LocalDate.now());
         Set<String> invalidFields = getInvalidFields(dto);
 
         assertEquals(Set.of("number", "holder", "expirationDate"), invalidFields);

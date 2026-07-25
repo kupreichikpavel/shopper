@@ -2,8 +2,8 @@ package by.innowise.userservice.service.impl;
 
 import by.innowise.userservice.cache.CacheNames;
 import by.innowise.userservice.dto.user.UserDetailsResponseDto;
+import by.innowise.userservice.dto.user.UserRequestDto;
 import by.innowise.userservice.dto.user.UserResponseDto;
-import by.innowise.userservice.dto.user.UserUpdateDto;
 import by.innowise.userservice.entity.User;
 import by.innowise.userservice.mapper.PaymentCardMapper;
 import by.innowise.userservice.mapper.UserMapper;
@@ -96,7 +96,7 @@ class UserServiceCachingTest {
     void shouldEvictCacheWhenUserUpdated() {
         User user = createUser();
         UserResponseDto responseDto = createResponseDto();
-        UserUpdateDto updateDto = createUpdateDto();
+        UserRequestDto updateDto = createUpdateDto();
 
         when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
 
@@ -147,8 +147,8 @@ class UserServiceCachingTest {
         return Objects.requireNonNull(cacheManager.getCache(CacheNames.USER_DETAILS));
     }
 
-    private UserUpdateDto createUpdateDto() {
-        return new UserUpdateDto("Pavel", "Kupreichik", LocalDate.of(2006, 1, 1), EMAIL);
+    private UserRequestDto createUpdateDto() {
+        return new UserRequestDto("Pavel", "Kupreichik", LocalDate.of(2006, 1, 1), EMAIL);
     }
 
     private User createUser() {

@@ -1,8 +1,7 @@
 package by.innowise.userservice.mapper;
 
-import by.innowise.userservice.dto.user.UserCreateDto;
+import by.innowise.userservice.dto.user.UserRequestDto;
 import by.innowise.userservice.dto.user.UserResponseDto;
-import by.innowise.userservice.dto.user.UserUpdateDto;
 import by.innowise.userservice.entity.PaymentCard;
 import by.innowise.userservice.entity.User;
 import org.junit.jupiter.api.Test;
@@ -22,7 +21,7 @@ class UserMapperTest {
 
     @Test
     void shouldMapCreateDtoToEntity() {
-        UserCreateDto dto = new UserCreateDto("Pavel", "Kupreichik", LocalDate.of(2006, 1, 1), "pavel@example.com");
+        UserRequestDto dto = new UserRequestDto("Pavel", "Kupreichik", LocalDate.of(2006, 1, 1), "pavel@example.com");
 
         User user = userMapper.toEntity(dto);
 
@@ -63,7 +62,7 @@ class UserMapperTest {
         Long originalId = user.getId();
         Instant originalCreatedAt = user.getCreatedAt();
 
-        UserUpdateDto dto = new UserUpdateDto("Alexey", "Ivanov", LocalDate.of(2005, 5, 10), "alexey@example.com");
+        UserRequestDto dto = new UserRequestDto("Alexey", "Ivanov", LocalDate.of(2005, 5, 10), "alexey@example.com");
 
         userMapper.updateEntity(dto, user);
 

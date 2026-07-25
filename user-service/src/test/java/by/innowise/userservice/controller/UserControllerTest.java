@@ -1,8 +1,7 @@
 package by.innowise.userservice.controller;
 
-import by.innowise.userservice.dto.user.UserCreateDto;
+import by.innowise.userservice.dto.user.UserRequestDto;
 import by.innowise.userservice.dto.user.UserResponseDto;
-import by.innowise.userservice.dto.user.UserUpdateDto;
 import by.innowise.userservice.exception.EmailAlreadyExistsException;
 import by.innowise.userservice.exception.UserNotFoundException;
 import by.innowise.userservice.exception.handler.GlobalExceptionHandler;
@@ -14,6 +13,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -53,32 +53,31 @@ class UserControllerTest {
 
     @Test
     void shouldCreateUser() throws Exception {
-        UserResponseDto responseDto = createResponseDto();
-
-        when(userService.create(any(UserCreateDto.class)))
-                .thenReturn(responseDto);
+        when(userService.create(
+                any(UserRequestDto.class)
+        )).thenReturn(createResponseDto());
 
         mockMvc.perform(
                         post("/api/v1/users")
-                                .contentType("application/json")
-                                .content("""
-                                        {
-                                          "name": "Pavel",
-                                          "surname": "Kupreichik",
-                                          "birthDate": "2006-01-01",
-                                          "email": "pavel@example.com"
-                                        }
-                                        """)
+                                .contentType(
+                                        MediaType.APPLICATION_JSON
+                                )
+                                .content(validRequestJson())
                 )
                 .andExpect(status().isCreated())
                 .andExpect(
-                        content()
-                                .contentTypeCompatibleWith(
-                                        "application/json"
-                                )
+                        content().contentTypeCompatibleWith(
+                                MediaType.APPLICATION_JSON
+                        )
                 )
-                .andExpect(jsonPath("$.id").value(USER_ID))
-                .andExpect(jsonPath("$.name").value("Pavel"))
+                .andExpect(
+                        jsonPath("$.id")
+                                .value(USER_ID)
+                )
+                .andExpect(
+                        jsonPath("$.name")
+                                .value("Pavel")
+                )
                 .andExpect(
                         jsonPath("$.surname")
                                 .value("Kupreichik")
@@ -87,10 +86,14 @@ class UserControllerTest {
                         jsonPath("$.email")
                                 .value("pavel@example.com")
                 )
-                .andExpect(jsonPath("$.active").value(true));
+                .andExpect(
+                        jsonPath("$.active")
+                                .value(true)
+                );
 
-        verify(userService)
-                .create(any(UserCreateDto.class));
+        verify(userService).create(
+                any(UserRequestDto.class)
+        );
     }
 
     @Test
@@ -102,8 +105,14 @@ class UserControllerTest {
                         get("/api/v1/users/{id}", USER_ID)
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(USER_ID))
-                .andExpect(jsonPath("$.name").value("Pavel"));
+                .andExpect(
+                        jsonPath("$.id")
+                                .value(USER_ID)
+                )
+                .andExpect(
+                        jsonPath("$.name")
+                                .value("Pavel")
+                );
 
         verify(userService).findById(USER_ID);
     }
@@ -117,7 +126,9 @@ class UserControllerTest {
                 eq("Kup"),
                 any(Pageable.class)
         )).thenReturn(
-                new PageImpl<>(List.of(createResponseDto()))
+                new PageImpl<>(
+                        List.of(createResponseDto())
+                )
         );
 
         mockMvc.perform(
@@ -128,7 +139,10 @@ class UserControllerTest {
                                 .param("size", "10")
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[0].id").value(USER_ID))
+                .andExpect(
+                        jsonPath("$.content[0].id")
+                                .value(USER_ID)
+                )
                 .andExpect(
                         jsonPath("$.content[0].name")
                                 .value("Pavel")
@@ -145,69 +159,81 @@ class UserControllerTest {
     void shouldUpdateUser() throws Exception {
         when(userService.update(
                 eq(USER_ID),
-                any(UserUpdateDto.class)
+                any(UserRequestDto.class)
         )).thenReturn(createResponseDto());
 
         mockMvc.perform(
                         put("/api/v1/users/{id}", USER_ID)
-                                .contentType("application/json")
-                                .content("""
-                                        {
-                                          "name": "Pavel",
-                                          "surname": "Kupreichik",
-                                          "birthDate": "2006-01-01",
-                                          "email": "pavel@example.com"
-                                        }
-                                        """)
+                                .contentType(
+                                        MediaType.APPLICATION_JSON
+                                )
+                                .content(validRequestJson())
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(USER_ID));
+                .andExpect(
+                        jsonPath("$.id")
+                                .value(USER_ID)
+                );
 
         verify(userService).update(
                 eq(USER_ID),
-                any(UserUpdateDto.class)
+                any(UserRequestDto.class)
         );
     }
 
     @Test
-    void shouldDeactivateUser() throws Exception {
-        UserResponseDto inactiveUser =
-                new UserResponseDto(
-                        USER_ID,
-                        "Pavel",
-                        "Kupreichik",
-                        LocalDate.of(2006, 1, 1),
-                        "pavel@example.com",
-                        false,
-                        Instant.parse("2026-01-01T10:00:00Z"),
-                        Instant.parse("2026-01-02T10:00:00Z")
-                );
-
-        when(userService.setActive(USER_ID, false))
-                .thenReturn(inactiveUser);
+    void shouldActivateUser() throws Exception {
+        when(userService.setActive(
+                USER_ID,
+                true
+        )).thenReturn(createResponseDto());
 
         mockMvc.perform(
                         patch(
-                                "/api/v1/users/{id}/active",
+                                "/api/v1/users/{id}/activate",
                                 USER_ID
                         )
-                                .contentType("application/json")
-                                .content("""
-                                        {
-                                          "active": false
-                                        }
-                                        """)
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.active").value(false));
+                .andExpect(
+                        jsonPath("$.active")
+                                .value(true)
+                );
 
-        verify(userService).setActive(USER_ID, false);
+        verify(userService)
+                .setActive(USER_ID, true);
+    }
+
+    @Test
+    void shouldDeactivateUser() throws Exception {
+        when(userService.setActive(
+                USER_ID,
+                false
+        )).thenReturn(createInactiveResponseDto());
+
+        mockMvc.perform(
+                        patch(
+                                "/api/v1/users/{id}/deactivate",
+                                USER_ID
+                        )
+                )
+                .andExpect(status().isOk())
+                .andExpect(
+                        jsonPath("$.active")
+                                .value(false)
+                );
+
+        verify(userService)
+                .setActive(USER_ID, false);
     }
 
     @Test
     void shouldDeleteUser() throws Exception {
         mockMvc.perform(
-                        delete("/api/v1/users/{id}", USER_ID)
+                        delete(
+                                "/api/v1/users/{id}",
+                                USER_ID
+                        )
                 )
                 .andExpect(status().isNoContent())
                 .andExpect(content().string(""));
@@ -216,10 +242,14 @@ class UserControllerTest {
     }
 
     @Test
-    void shouldRejectInvalidCreateRequest() throws Exception {
+    void shouldRejectInvalidCreateRequest()
+            throws Exception {
+
         mockMvc.perform(
                         post("/api/v1/users")
-                                .contentType("application/json")
+                                .contentType(
+                                        MediaType.APPLICATION_JSON
+                                )
                                 .content("""
                                         {
                                           "name": "",
@@ -230,26 +260,40 @@ class UserControllerTest {
                                         """)
                 )
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400))
                 .andExpect(
-                        jsonPath("$.message")
-                                .value("Request validation failed")
+                        jsonPath("$.title")
+                                .value("Bad Request")
                 )
                 .andExpect(
-                        jsonPath("$.fieldErrors.name").exists()
+                        jsonPath("$.status")
+                                .value(400)
                 )
                 .andExpect(
-                        jsonPath("$.fieldErrors.surname").exists()
+                        jsonPath("$.detail")
+                                .value(
+                                        "Request validation failed"
+                                )
                 )
                 .andExpect(
-                        jsonPath("$.fieldErrors.birthDate").exists()
+                        jsonPath("$.fieldErrors.name")
+                                .exists()
                 )
                 .andExpect(
-                        jsonPath("$.fieldErrors.email").exists()
+                        jsonPath("$.fieldErrors.surname")
+                                .exists()
+                )
+                .andExpect(
+                        jsonPath("$.fieldErrors.birthDate")
+                                .exists()
+                )
+                .andExpect(
+                        jsonPath("$.fieldErrors.email")
+                                .exists()
                 );
 
-        verify(userService, never())
-                .create(any(UserCreateDto.class));
+        verify(userService, never()).create(
+                any(UserRequestDto.class)
+        );
     }
 
     @Test
@@ -257,24 +301,27 @@ class UserControllerTest {
             throws Exception {
 
         when(userService.findById(999L))
-                .thenThrow(new UserNotFoundException(999L));
+                .thenThrow(
+                        new UserNotFoundException(999L)
+                );
 
-        mockMvc.perform(get("/api/v1/users/{id}", 999L))
+        mockMvc.perform(
+                        get("/api/v1/users/{id}", 999L)
+                )
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.status").value(404))
                 .andExpect(
-                        jsonPath("$.error")
+                        jsonPath("$.title")
                                 .value("Not Found")
                 )
                 .andExpect(
-                        jsonPath("$.message")
+                        jsonPath("$.status")
+                                .value(404)
+                )
+                .andExpect(
+                        jsonPath("$.detail")
                                 .value(
                                         "User with id 999 was not found"
                                 )
-                )
-                .andExpect(
-                        jsonPath("$.path")
-                                .value("/api/v1/users/999")
                 );
     }
 
@@ -282,37 +329,66 @@ class UserControllerTest {
     void shouldReturnConflictWhenEmailAlreadyExists()
             throws Exception {
 
-        when(userService.create(any(UserCreateDto.class)))
-                .thenThrow(
-                        new EmailAlreadyExistsException(
-                                "pavel@example.com"
-                        )
-                );
+        when(userService.create(
+                any(UserRequestDto.class)
+        )).thenThrow(
+                new EmailAlreadyExistsException(
+                        "pavel@example.com"
+                )
+        );
 
         mockMvc.perform(
                         post("/api/v1/users")
-                                .contentType("application/json")
-                                .content("""
-                                        {
-                                          "name": "Pavel",
-                                          "surname": "Kupreichik",
-                                          "birthDate": "2006-01-01",
-                                          "email": "pavel@example.com"
-                                        }
-                                        """)
+                                .contentType(
+                                        MediaType.APPLICATION_JSON
+                                )
+                                .content(validRequestJson())
                 )
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.status").value(409))
-                .andExpect(jsonPath("$.error").value("Conflict"));
+                .andExpect(
+                        jsonPath("$.title")
+                                .value("Conflict")
+                )
+                .andExpect(
+                        jsonPath("$.status")
+                                .value(409)
+                )
+                .andExpect(
+                        jsonPath("$.detail")
+                                .exists()
+                );
     }
 
     @Test
-    void shouldRejectNonPositiveUserId() throws Exception {
-        mockMvc.perform(get("/api/v1/users/{id}", 0))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400));
+    void shouldRejectNonPositiveUserId()
+            throws Exception {
 
-        verify(userService, never()).findById(0L);
+        mockMvc.perform(
+                        get("/api/v1/users/{id}", 0)
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(
+                        jsonPath("$.title")
+                                .value("Bad Request")
+                )
+                .andExpect(
+                        jsonPath("$.status")
+                                .value(400)
+                );
+
+        verify(userService, never())
+                .findById(0L);
+    }
+
+    private String validRequestJson() {
+        return """
+                {
+                  "name": "Pavel",
+                  "surname": "Kupreichik",
+                  "birthDate": "2006-01-01",
+                  "email": "pavel@example.com"
+                }
+                """;
     }
 
     private UserResponseDto createResponseDto() {
@@ -323,6 +399,19 @@ class UserControllerTest {
                 LocalDate.of(2006, 1, 1),
                 "pavel@example.com",
                 true,
+                Instant.parse("2026-01-01T10:00:00Z"),
+                Instant.parse("2026-01-02T10:00:00Z")
+        );
+    }
+
+    private UserResponseDto createInactiveResponseDto() {
+        return new UserResponseDto(
+                USER_ID,
+                "Pavel",
+                "Kupreichik",
+                LocalDate.of(2006, 1, 1),
+                "pavel@example.com",
+                false,
                 Instant.parse("2026-01-01T10:00:00Z"),
                 Instant.parse("2026-01-02T10:00:00Z")
         );

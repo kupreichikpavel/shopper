@@ -1,10 +1,8 @@
 package by.innowise.userservice.controller;
 
-import by.innowise.userservice.dto.common.ActiveStatusUpdateDto;
-import by.innowise.userservice.dto.user.UserCreateDto;
 import by.innowise.userservice.dto.user.UserDetailsResponseDto;
+import by.innowise.userservice.dto.user.UserRequestDto;
 import by.innowise.userservice.dto.user.UserResponseDto;
-import by.innowise.userservice.dto.user.UserUpdateDto;
 import by.innowise.userservice.service.UserService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
@@ -35,7 +33,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<UserResponseDto> create(@Valid @RequestBody UserCreateDto dto) {
+    public ResponseEntity<UserResponseDto> create(@Valid @RequestBody UserRequestDto dto) {
         UserResponseDto createdUser = userService.create(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
@@ -59,14 +57,26 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponseDto> update(@PathVariable @Positive(message = "User id must be positive") Long id, @Valid @RequestBody UserUpdateDto dto) {
+    public ResponseEntity<UserResponseDto> update(@PathVariable @Positive(message = "User id must be positive") Long id, @Valid @RequestBody UserRequestDto dto) {
         return ResponseEntity.ok(userService.update(id, dto));
     }
 
-    @PatchMapping("/{id}/active")
-    public ResponseEntity<UserResponseDto> setActive(@PathVariable @Positive(message = "User id must be positive") Long id,
-                                                     @Valid @RequestBody ActiveStatusUpdateDto dto) {
-        return ResponseEntity.ok(userService.setActive(id, dto.active()));
+    @PatchMapping("/{id}/activate")
+    public ResponseEntity<UserResponseDto> activate(
+            @PathVariable
+            @Positive(message = "User id must be positive")
+            Long id
+    ) {
+        return ResponseEntity.ok(userService.setActive(id, true));
+    }
+
+    @PatchMapping("/{id}/deactivate")
+    public ResponseEntity<UserResponseDto> deactivate(
+            @PathVariable
+            @Positive(message = "User id must be positive")
+            Long id
+    ) {
+        return ResponseEntity.ok(userService.setActive(id, false));
     }
 
     @DeleteMapping("/{id}")

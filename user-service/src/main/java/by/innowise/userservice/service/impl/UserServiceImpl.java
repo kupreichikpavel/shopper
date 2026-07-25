@@ -1,8 +1,7 @@
 package by.innowise.userservice.service.impl;
 
-import by.innowise.userservice.dto.user.UserCreateDto;
+import by.innowise.userservice.dto.user.UserRequestDto;
 import by.innowise.userservice.dto.user.UserResponseDto;
-import by.innowise.userservice.dto.user.UserUpdateDto;
 import by.innowise.userservice.entity.User;
 import by.innowise.userservice.exception.EmailAlreadyExistsException;
 import by.innowise.userservice.exception.UserNotFoundException;
@@ -39,7 +38,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserResponseDto create(UserCreateDto dto) {
+    public UserResponseDto create(UserRequestDto dto) {
         ensureEmailAvailable(dto.email(), null);
         User user = userMapper.toEntity(dto);
         User savedUser = userRepository.save(user);
@@ -71,7 +70,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     @CacheEvict(cacheNames = CacheNames.USER_DETAILS, key = "#id")
-    public UserResponseDto update(Long id, UserUpdateDto dto) {
+    public UserResponseDto update(Long id, UserRequestDto dto) {
         User user = findUserById(id);
         ensureEmailAvailable(dto.email(), id);
         userMapper.updateEntity(dto, user);

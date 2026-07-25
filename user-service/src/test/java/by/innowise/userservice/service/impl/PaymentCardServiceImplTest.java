@@ -1,8 +1,7 @@
 package by.innowise.userservice.service.impl;
 
-import by.innowise.userservice.dto.paymentcard.PaymentCardCreateDto;
+import by.innowise.userservice.dto.paymentcard.PaymentCardRequestDto;
 import by.innowise.userservice.dto.paymentcard.PaymentCardResponseDto;
-import by.innowise.userservice.dto.paymentcard.PaymentCardUpdateDto;
 import by.innowise.userservice.entity.PaymentCard;
 import by.innowise.userservice.entity.User;
 import by.innowise.userservice.exception.PaymentCardLimitExceededException;
@@ -68,7 +67,7 @@ class PaymentCardServiceImplTest {
     @Test
     void shouldCreatePaymentCard() {
         User user = createUser();
-        PaymentCardCreateDto createDto = createCreateDto();
+        PaymentCardRequestDto createDto = createCreateDto();
         PaymentCard paymentCard = createPaymentCard();
         PaymentCardResponseDto responseDto = createResponseDto();
         paymentCard.setUser(null);
@@ -99,7 +98,7 @@ class PaymentCardServiceImplTest {
     @Test
     void shouldRejectSixthPaymentCard() {
         User user = createUser();
-        PaymentCardCreateDto createDto = createCreateDto();
+        PaymentCardRequestDto createDto = createCreateDto();
         when(userRepository.findById(USER_ID))
                 .thenReturn(Optional.of(user));
         when(paymentCardRepository.countCardsByUserId(USER_ID))
@@ -117,7 +116,7 @@ class PaymentCardServiceImplTest {
 
     @Test
     void shouldThrowExceptionWhenCreatingCardForMissingUser() {
-        PaymentCardCreateDto createDto = createCreateDto();
+        PaymentCardRequestDto createDto = createCreateDto();
         when(userRepository.findById(USER_ID))
                 .thenReturn(Optional.empty());
 
@@ -243,7 +242,7 @@ class PaymentCardServiceImplTest {
     @Test
     void shouldUpdatePaymentCard() {
         PaymentCard paymentCard = createPaymentCard();
-        PaymentCardUpdateDto updateDto = createUpdateDto();
+        PaymentCardRequestDto updateDto = createUpdateDto();
         PaymentCardResponseDto responseDto = createResponseDto();
         when(paymentCardRepository.findById(CARD_ID))
                 .thenReturn(Optional.of(paymentCard));
@@ -318,16 +317,16 @@ class PaymentCardServiceImplTest {
         verify(paymentCardRepository).delete(paymentCard);
     }
 
-    private PaymentCardCreateDto createCreateDto() {
-        return new PaymentCardCreateDto(
+    private PaymentCardRequestDto createCreateDto() {
+        return new PaymentCardRequestDto(
                 CARD_NUMBER,
                 "PAVEL KUPREICHIK",
                 LocalDate.of(2030, 12, 31)
         );
     }
 
-    private PaymentCardUpdateDto createUpdateDto() {
-        return new PaymentCardUpdateDto(
+    private PaymentCardRequestDto createUpdateDto() {
+        return new PaymentCardRequestDto(
                 CARD_NUMBER,
                 "UPDATED HOLDER",
                 LocalDate.of(2032, 12, 31)

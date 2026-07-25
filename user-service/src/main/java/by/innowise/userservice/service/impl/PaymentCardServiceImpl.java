@@ -1,9 +1,8 @@
 package by.innowise.userservice.service.impl;
 
 import by.innowise.userservice.cache.CacheNames;
-import by.innowise.userservice.dto.paymentcard.PaymentCardCreateDto;
+import by.innowise.userservice.dto.paymentcard.PaymentCardRequestDto;
 import by.innowise.userservice.dto.paymentcard.PaymentCardResponseDto;
-import by.innowise.userservice.dto.paymentcard.PaymentCardUpdateDto;
 import by.innowise.userservice.entity.PaymentCard;
 import by.innowise.userservice.entity.User;
 import by.innowise.userservice.exception.PaymentCardLimitExceededException;
@@ -37,7 +36,7 @@ public class PaymentCardServiceImpl implements PaymentCardService {
 
     @Override
     @Transactional
-    public PaymentCardResponseDto create(Long userId, PaymentCardCreateDto dto) {
+    public PaymentCardResponseDto create(Long userId, PaymentCardRequestDto dto) {
         User user = findUserById(userId);
         long cardsCount = paymentCardRepository.countCardsByUserId(userId);
         if (cardsCount >= User.MAX_PAYMENT_CARDS) {
@@ -72,7 +71,7 @@ public class PaymentCardServiceImpl implements PaymentCardService {
 
     @Override
     @Transactional
-    public PaymentCardResponseDto update(Long id, PaymentCardUpdateDto dto) {
+    public PaymentCardResponseDto update(Long id, PaymentCardRequestDto dto) {
         PaymentCard paymentCard = findPaymentCardById(id);
         Long userId = paymentCard.getUser().getId();
         paymentCardMapper.updateEntity(dto, paymentCard);
