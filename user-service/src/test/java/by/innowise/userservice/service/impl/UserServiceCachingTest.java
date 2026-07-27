@@ -1,6 +1,5 @@
 package by.innowise.userservice.service.impl;
 
-import by.innowise.userservice.cache.CacheNames;
 import by.innowise.userservice.dto.user.UserDetailsResponseDto;
 import by.innowise.userservice.dto.user.UserRequestDto;
 import by.innowise.userservice.dto.user.UserResponseDto;
@@ -41,6 +40,7 @@ class UserServiceCachingTest {
 
     private static final Long USER_ID = 1L;
     private static final String EMAIL = "pavel@example.com";
+    private static final String USER_DETAILS_CACHE = "user-details";
 
     @Autowired
     private UserService userService;
@@ -144,7 +144,7 @@ class UserServiceCachingTest {
     }
 
     private Cache getUserDetailsCache() {
-        return Objects.requireNonNull(cacheManager.getCache(CacheNames.USER_DETAILS));
+        return Objects.requireNonNull(cacheManager.getCache(USER_DETAILS_CACHE));
     }
 
     private UserRequestDto createUpdateDto() {
@@ -176,7 +176,7 @@ class UserServiceCachingTest {
 
         @Bean
         CacheManager cacheManager() {
-            return new ConcurrentMapCacheManager(CacheNames.USER_DETAILS);
+            return new ConcurrentMapCacheManager(USER_DETAILS_CACHE);
         }
 
         @Bean

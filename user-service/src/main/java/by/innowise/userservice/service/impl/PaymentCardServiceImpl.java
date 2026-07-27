@@ -1,6 +1,5 @@
 package by.innowise.userservice.service.impl;
 
-import by.innowise.userservice.cache.CacheNames;
 import by.innowise.userservice.dto.paymentcard.PaymentCardRequestDto;
 import by.innowise.userservice.dto.paymentcard.PaymentCardResponseDto;
 import by.innowise.userservice.entity.PaymentCard;
@@ -28,6 +27,8 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class PaymentCardServiceImpl implements PaymentCardService {
+
+    private static final String USER_DETAILS_CACHE = "user-details";
 
     private final PaymentCardRepository paymentCardRepository;
     private final UserRepository userRepository;
@@ -113,7 +114,7 @@ public class PaymentCardServiceImpl implements PaymentCardService {
     }
 
     private void evictUserDetailsCache(Long userId) {
-        Cache cache = cacheManager.getCache(CacheNames.USER_DETAILS);
+        Cache cache = cacheManager.getCache(USER_DETAILS_CACHE);
         if (cache != null) {
             cache.evict(userId);
         }

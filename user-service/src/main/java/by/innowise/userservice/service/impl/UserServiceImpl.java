@@ -16,7 +16,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import by.innowise.userservice.cache.CacheNames;
 import by.innowise.userservice.dto.paymentcard.PaymentCardResponseDto;
 import by.innowise.userservice.dto.user.UserDetailsResponseDto;
 import by.innowise.userservice.mapper.PaymentCardMapper;
@@ -30,6 +29,8 @@ import java.util.Objects;
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
+
+    private static final String USER_DETAILS_CACHE = "user-details";
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
@@ -59,7 +60,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(cacheNames = CacheNames.USER_DETAILS, key = "#id")
+    @Cacheable(cacheNames = USER_DETAILS_CACHE, key = "#id")
     public UserDetailsResponseDto findDetailsById(Long id) {
         User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
         List<PaymentCardResponseDto> paymentCards = paymentCardRepository.findAllByUser_Id(id)
@@ -69,7 +70,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    @CacheEvict(cacheNames = CacheNames.USER_DETAILS, key = "#id")
+    @CacheEvict(cacheNames = USER_DETAILS_CACHE, key = "#id")
     public UserResponseDto update(Long id, UserRequestDto dto) {
         User user = findUserById(id);
         ensureEmailAvailable(dto.email(), id);
@@ -81,7 +82,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    @CacheEvict(cacheNames = CacheNames.USER_DETAILS, key = "#id")
+    @CacheEvict(cacheNames = USER_DETAILS_CACHE, key = "#id")
     public UserResponseDto setActive(Long id, boolean active) {
         int updatedRows = userRepository.updateActiveById(id, active);
         if (updatedRows == 0) {
@@ -94,7 +95,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    @CacheEvict(cacheNames = CacheNames.USER_DETAILS, key = "#id")
+    @CacheEvict(cacheNames = USER_DETAILS_CACHE, key = "#id")
     public void delete(Long id) {
         User user = findUserById(id);
         userRepository.delete(user);

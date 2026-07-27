@@ -1,7 +1,6 @@
 package by.innowise.userservice.integration;
 
 import by.innowise.userservice.TestcontainersConfiguration;
-import by.innowise.userservice.cache.CacheNames;
 import by.innowise.userservice.entity.PaymentCard;
 import by.innowise.userservice.entity.User;
 import by.innowise.userservice.repository.PaymentCardRepository;
@@ -35,6 +34,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 class UserServiceFlowIntegrationTest {
 
+    private static final String USER_DETAILS_CACHE = "user-details";
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -50,7 +51,7 @@ class UserServiceFlowIntegrationTest {
     @BeforeEach
     void cleanDatabaseAndCache() {
         Cache cache = cacheManager.getCache(
-                CacheNames.USER_DETAILS
+                USER_DETAILS_CACHE
         );
 
         if (cache != null) {
