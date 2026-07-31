@@ -11,6 +11,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -177,6 +178,24 @@ public class GlobalExceptionHandler {
         return createProblemDetail(
                 HttpStatus.BAD_REQUEST,
                 "Request contains invalid data",
+                request
+        );
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ProblemDetail handleAccessDenied(
+            AccessDeniedException exception,
+            HttpServletRequest request
+    ) {
+        log.warn(
+                "Access denied while processing {} {}",
+                request.getMethod(),
+                request.getRequestURI()
+        );
+
+        return createProblemDetail(
+                HttpStatus.FORBIDDEN,
+                "Access denied",
                 request
         );
     }

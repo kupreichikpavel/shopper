@@ -1,5 +1,6 @@
 package by.innowise.userservice.controller;
 
+import by.innowise.userservice.config.SecurityConfig;
 import by.innowise.userservice.dto.paymentcard.PaymentCardRequestDto;
 import by.innowise.userservice.dto.paymentcard.PaymentCardResponseDto;
 import by.innowise.userservice.exception.PaymentCardNotFoundException;
@@ -8,11 +9,13 @@ import by.innowise.userservice.service.PaymentCardService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -34,7 +37,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(PaymentCardController.class)
-@Import(GlobalExceptionHandler.class)
+@AutoConfigureMockMvc(addFilters = false)
+@Import({
+        GlobalExceptionHandler.class,
+        SecurityConfig.class
+})
 class PaymentCardControllerTest {
 
     private static final Long USER_ID = 1L;
@@ -45,6 +52,9 @@ class PaymentCardControllerTest {
 
     @MockitoBean
     private PaymentCardService paymentCardService;
+
+    @MockitoBean
+    private JwtDecoder jwtDecoder;
 
     @SuppressWarnings("unused")
     @MockitoBean(name = "jpaMappingContext")
@@ -63,10 +73,7 @@ class PaymentCardControllerTest {
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(CARD_ID))
-                .andExpect(
-                        jsonPath("$.userId")
-                                .value(USER_ID)
-                );
+                .andExpect(jsonPath("$.userId").value(USER_ID));
 
         verify(paymentCardService).findById(CARD_ID);
     }
@@ -121,16 +128,11 @@ class PaymentCardControllerTest {
                                 "/api/v1/payment-cards/{id}",
                                 CARD_ID
                         )
-                                .contentType(
-                                        MediaType.APPLICATION_JSON
-                                )
+                                .contentType(MediaType.APPLICATION_JSON)
                                 .content(validRequestJson())
                 )
                 .andExpect(status().isOk())
-                .andExpect(
-                        jsonPath("$.id")
-                                .value(CARD_ID)
-                );
+                .andExpect(jsonPath("$.id").value(CARD_ID));
 
         verify(paymentCardService).update(
                 eq(CARD_ID),
@@ -140,10 +142,8 @@ class PaymentCardControllerTest {
 
     @Test
     void shouldActivatePaymentCard() throws Exception {
-        when(paymentCardService.setActive(
-                CARD_ID,
-                true
-        )).thenReturn(createResponseDto());
+        when(paymentCardService.setActive(CARD_ID, true))
+                .thenReturn(createResponseDto());
 
         mockMvc.perform(
                         patch(
@@ -152,10 +152,7 @@ class PaymentCardControllerTest {
                         )
                 )
                 .andExpect(status().isOk())
-                .andExpect(
-                        jsonPath("$.active")
-                                .value(true)
-                );
+                .andExpect(jsonPath("$.active").value(true));
 
         verify(paymentCardService)
                 .setActive(CARD_ID, true);
@@ -163,10 +160,8 @@ class PaymentCardControllerTest {
 
     @Test
     void shouldDeactivatePaymentCard() throws Exception {
-        when(paymentCardService.setActive(
-                CARD_ID,
-                false
-        )).thenReturn(createInactiveResponseDto());
+        when(paymentCardService.setActive(CARD_ID, false))
+                .thenReturn(createInactiveResponseDto());
 
         mockMvc.perform(
                         patch(
@@ -175,10 +170,7 @@ class PaymentCardControllerTest {
                         )
                 )
                 .andExpect(status().isOk())
-                .andExpect(
-                        jsonPath("$.active")
-                                .value(false)
-                );
+                .andExpect(jsonPath("$.active").value(false));
 
         verify(paymentCardService)
                 .setActive(CARD_ID, false);
@@ -214,14 +206,8 @@ class PaymentCardControllerTest {
                         )
                 )
                 .andExpect(status().isNotFound())
-                .andExpect(
-                        jsonPath("$.title")
-                                .value("Not Found")
-                )
-                .andExpect(
-                        jsonPath("$.status")
-                                .value(404)
-                )
+                .andExpect(jsonPath("$.title").value("Not Found"))
+                .andExpect(jsonPath("$.status").value(404))
                 .andExpect(
                         jsonPath("$.detail")
                                 .value(
@@ -241,14 +227,8 @@ class PaymentCardControllerTest {
                         )
                 )
                 .andExpect(status().isBadRequest())
-                .andExpect(
-                        jsonPath("$.title")
-                                .value("Bad Request")
-                )
-                .andExpect(
-                        jsonPath("$.status")
-                                .value(400)
-                );
+                .andExpect(jsonPath("$.title").value("Bad Request"))
+                .andExpect(jsonPath("$.status").value(400));
 
         verify(paymentCardService, never())
                 .findById(0L);
