@@ -1,0 +1,10 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:postgres}:${POSTGRES_PORT:5432}/${POSTGRES_DB:shopper}
+    username: ${POSTGRES_USER:shopper}
+    password: ${POSTGRES_PASSWORD:shopper}
+
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
