@@ -28,4 +28,10 @@ public interface PaymentCardRepository extends JpaRepository<PaymentCard, Long>,
             WHERE id = :id
             """, nativeQuery = true)
     int updateActiveById(@Param("id") Long id, @Param("active") boolean active);
+
+    boolean existsByIdAndUser_Id(
+            Long id,
+            Long userId
+    );
+
 }
