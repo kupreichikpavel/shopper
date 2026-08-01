@@ -38,7 +38,7 @@ public class PaymentCardServiceImpl implements PaymentCardService {
 
     @Override
     @Transactional
-    @PreAuthorize("hasRole('ADMIN') or (hasRole('USER') and @userAccess.isOwner(#p0, authentication))")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('USER') and @userAccess.isOwner(#userId, authentication))")
     public PaymentCardResponseDto create(Long userId, PaymentCardRequestDto dto) {
         User user = findUserById(userId);
         long cardsCount = paymentCardRepository.countCardsByUserId(userId);
@@ -55,14 +55,14 @@ public class PaymentCardServiceImpl implements PaymentCardService {
     }
 
     @Override
-    @PreAuthorize("hasRole('ADMIN') or (hasRole('USER') and @paymentCardAccess.isOwner(#p0, authentication))")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('USER') and @paymentCardAccess.isOwner(#id, authentication))")
     public PaymentCardResponseDto findById(Long id) {
         PaymentCard paymentCard = findPaymentCardById(id);
         return paymentCardMapper.toDto(paymentCard);
     }
 
     @Override
-    @PreAuthorize("hasRole('ADMIN') or (hasRole('USER') and @userAccess.isOwner(#p0, authentication))")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('USER') and @userAccess.isOwner(#userId, authentication))")
     public List<PaymentCardResponseDto> findAllByUserId(Long userId) {
         findUserById(userId);
         return paymentCardRepository.findAllByUser_Id(userId).stream().map(paymentCardMapper::toDto).toList();
@@ -77,7 +77,7 @@ public class PaymentCardServiceImpl implements PaymentCardService {
 
     @Override
     @Transactional
-    @PreAuthorize("hasRole('ADMIN') or (hasRole('USER') and @paymentCardAccess.isOwner(#p0, authentication))")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('USER') and @paymentCardAccess.isOwner(#id, authentication))")
     public PaymentCardResponseDto update(Long id, PaymentCardRequestDto dto) {
         PaymentCard paymentCard = findPaymentCardById(id);
         Long userId = paymentCard.getUser().getId();
@@ -90,7 +90,7 @@ public class PaymentCardServiceImpl implements PaymentCardService {
 
     @Override
     @Transactional
-    @PreAuthorize("hasRole('ADMIN') or (hasRole('USER') and @paymentCardAccess.isOwner(#p0, authentication))")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('USER') and @paymentCardAccess.isOwner(#id, authentication))")
     public PaymentCardResponseDto setActive(Long id, boolean active) {
         int updatedRows = paymentCardRepository.updateActiveById(id, active);
         if (updatedRows == 0) {
@@ -104,7 +104,7 @@ public class PaymentCardServiceImpl implements PaymentCardService {
 
     @Override
     @Transactional
-    @PreAuthorize("hasRole('ADMIN') or (hasRole('USER') and @paymentCardAccess.isOwner(#p0, authentication))")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('USER') and @paymentCardAccess.isOwner(#id, authentication))")
     public void delete(Long id) {
         PaymentCard paymentCard = findPaymentCardById(id);
         Long userId = paymentCard.getUser().getId();

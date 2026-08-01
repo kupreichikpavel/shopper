@@ -50,7 +50,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @PreAuthorize("hasRole('ADMIN') or (hasRole('USER') and @userAccess.isOwner(#p0, authentication))")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('USER') and @userAccess.isOwner(#id, authentication))")
     public UserResponseDto findById(Long id) {
         User user = findUserById(id);
         return userMapper.toDto(user);
@@ -65,7 +65,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(cacheNames = USER_DETAILS_CACHE, key = "#id")
-    @PreAuthorize("hasRole('ADMIN') or (hasRole('USER') and @userAccess.isOwner(#p0, authentication))")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('USER') and @userAccess.isOwner(#id, authentication))")
     public UserDetailsResponseDto findDetailsById(Long id) {
         User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
         List<PaymentCardResponseDto> paymentCards = paymentCardRepository.findAllByUser_Id(id)
@@ -76,7 +76,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     @CacheEvict(cacheNames = USER_DETAILS_CACHE, key = "#id")
-    @PreAuthorize("hasRole('ADMIN') or (hasRole('USER') and @userAccess.isOwner(#p0, authentication))")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('USER') and @userAccess.isOwner(#id, authentication))")
     public UserResponseDto update(Long id, UserRequestDto dto) {
         User user = findUserById(id);
         ensureEmailAvailable(dto.email(), id);

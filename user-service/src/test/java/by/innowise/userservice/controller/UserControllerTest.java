@@ -1,6 +1,6 @@
 package by.innowise.userservice.controller;
-
 import by.innowise.userservice.config.SecurityConfig;
+
 import by.innowise.userservice.dto.paymentcard.PaymentCardRequestDto;
 import by.innowise.userservice.dto.paymentcard.PaymentCardResponseDto;
 import by.innowise.userservice.dto.user.UserRequestDto;
@@ -14,20 +14,23 @@ import by.innowise.userservice.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
@@ -43,7 +46,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(UserController.class)
-@AutoConfigureMockMvc(addFilters = false)
 @Import({
         GlobalExceptionHandler.class,
         SecurityConfig.class
@@ -74,7 +76,7 @@ class UserControllerTest {
         when(userService.create(any(UserRequestDto.class)))
                 .thenReturn(createUserResponseDto());
 
-        mockMvc.perform(
+        perform(
                         post("/api/v1/users")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(validUserRequestJson())
@@ -99,7 +101,7 @@ class UserControllerTest {
         when(userService.findById(USER_ID))
                 .thenReturn(createUserResponseDto());
 
-        mockMvc.perform(
+        perform(
                         get("/api/v1/users/{id}", USER_ID)
                 )
                 .andExpect(status().isOk())
@@ -123,7 +125,7 @@ class UserControllerTest {
                 )
         );
 
-        mockMvc.perform(
+        perform(
                         get("/api/v1/users")
                                 .param("name", "Pav")
                                 .param("surname", "Kup")
@@ -154,7 +156,7 @@ class UserControllerTest {
                 any(UserRequestDto.class)
         )).thenReturn(createUserResponseDto());
 
-        mockMvc.perform(
+        perform(
                         put("/api/v1/users/{id}", USER_ID)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(validUserRequestJson())
@@ -173,7 +175,7 @@ class UserControllerTest {
         when(userService.setActive(USER_ID, true))
                 .thenReturn(createUserResponseDto());
 
-        mockMvc.perform(
+        perform(
                         patch(
                                 "/api/v1/users/{id}/activate",
                                 USER_ID
@@ -190,7 +192,7 @@ class UserControllerTest {
         when(userService.setActive(USER_ID, false))
                 .thenReturn(createInactiveUserResponseDto());
 
-        mockMvc.perform(
+        perform(
                         patch(
                                 "/api/v1/users/{id}/deactivate",
                                 USER_ID
@@ -204,7 +206,7 @@ class UserControllerTest {
 
     @Test
     void shouldDeleteUser() throws Exception {
-        mockMvc.perform(
+        perform(
                         delete("/api/v1/users/{id}", USER_ID)
                 )
                 .andExpect(status().isNoContent())
@@ -217,7 +219,7 @@ class UserControllerTest {
     void shouldRejectInvalidUserCreateRequest()
             throws Exception {
 
-        mockMvc.perform(
+        perform(
                         post("/api/v1/users")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
@@ -252,7 +254,7 @@ class UserControllerTest {
         when(userService.findById(999L))
                 .thenThrow(new UserNotFoundException(999L));
 
-        mockMvc.perform(
+        perform(
                         get("/api/v1/users/{id}", 999L)
                 )
                 .andExpect(status().isNotFound())
@@ -277,7 +279,7 @@ class UserControllerTest {
                         )
                 );
 
-        mockMvc.perform(
+        perform(
                         post("/api/v1/users")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(validUserRequestJson())
@@ -292,7 +294,7 @@ class UserControllerTest {
     void shouldRejectNonPositiveUserId()
             throws Exception {
 
-        mockMvc.perform(
+        perform(
                         get("/api/v1/users/{id}", 0)
                 )
                 .andExpect(status().isBadRequest())
@@ -309,7 +311,7 @@ class UserControllerTest {
                 any(PaymentCardRequestDto.class)
         )).thenReturn(createPaymentCardResponseDto());
 
-        mockMvc.perform(
+        perform(
                         post(
                                 "/api/v1/users/{userId}/payment-cards",
                                 USER_ID
@@ -350,7 +352,7 @@ class UserControllerTest {
                         List.of(createPaymentCardResponseDto())
                 );
 
-        mockMvc.perform(
+        perform(
                         get(
                                 "/api/v1/users/{userId}/payment-cards",
                                 USER_ID
@@ -376,7 +378,7 @@ class UserControllerTest {
     void shouldRejectInvalidPaymentCardCreateRequest()
             throws Exception {
 
-        mockMvc.perform(
+        perform(
                         post(
                                 "/api/v1/users/{userId}/payment-cards",
                                 USER_ID
@@ -414,7 +416,7 @@ class UserControllerTest {
     void shouldRejectNonPositiveUserIdForPaymentCards()
             throws Exception {
 
-        mockMvc.perform(
+        perform(
                         get(
                                 "/api/v1/users/{userId}/payment-cards",
                                 0
@@ -437,7 +439,7 @@ class UserControllerTest {
                 any(PaymentCardRequestDto.class)
         )).thenThrow(new UserNotFoundException(USER_ID));
 
-        mockMvc.perform(
+        perform(
                         post(
                                 "/api/v1/users/{userId}/payment-cards",
                                 USER_ID
@@ -467,7 +469,7 @@ class UserControllerTest {
                 new PaymentCardLimitExceededException(USER_ID)
         );
 
-        mockMvc.perform(
+        perform(
                         post(
                                 "/api/v1/users/{userId}/payment-cards",
                                 USER_ID
@@ -540,4 +542,29 @@ class UserControllerTest {
                 Instant.parse("2026-01-02T10:00:00Z")
         );
     }
+
+    private ResultActions perform(
+            MockHttpServletRequestBuilder request
+    ) throws Exception {
+        return mockMvc.perform(
+                request.with(
+                        jwt()
+                                .jwt(builder ->
+                                        builder.claim(
+                                                "userId",
+                                                USER_ID
+                                        )
+                                )
+                                .authorities(
+                                        new SimpleGrantedAuthority(
+                                                "ROLE_ADMIN"
+                                        ),
+                                        new SimpleGrantedAuthority(
+                                                "ROLE_SERVICE"
+                                        )
+                                )
+                )
+        );
+    }
+
 }
