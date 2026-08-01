@@ -40,6 +40,7 @@ services:
       dockerfile: Dockerfile
     environment:
       SPRING_PROFILES_ACTIVE: docker
+      KEYCLOAK_ISSUER_URI: ${KEYCLOAK_ISSUER_URI:-http://keycloak:8080/realms/shopper}
       POSTGRES_DB: ${POSTGRES_DB:-shopper}
       POSTGRES_USER: ${POSTGRES_USER:-shopper}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-shopper}
@@ -50,8 +51,17 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    networks:
+      - default
+      - shopper-network
     restart: unless-stopped
 
 volumes:
   postgres-data:
   redis-data:
+
+networks:
+  default:
+  shopper-network:
+    name: shopper-network
+    external: true
