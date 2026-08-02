@@ -14,7 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import by.innowise.userservice.dto.paymentcard.PaymentCardResponseDto;
@@ -40,7 +39,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    @PreAuthorize("hasRole('SERVICE')")
     public UserResponseDto create(UserRequestDto dto) {
         ensureEmailAvailable(dto.email(), null);
         User user = userMapper.toEntity(dto);
@@ -50,14 +48,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @PreAuthorize("hasRole('ADMIN') or (hasRole('USER') and @userAccess.isOwner(#id, authentication))")
     public UserResponseDto findById(Long id) {
         User user = findUserById(id);
         return userMapper.toDto(user);
     }
 
     @Override
-    @PreAuthorize("hasRole('ADMIN')")
     public Page<UserResponseDto> findAll(String name, String surname, Pageable pageable) {
         return userRepository.findAll(UserSpecifications.byNameAndSurname(name, surname), pageable).map(userMapper::toDto);
     }
@@ -65,7 +61,6 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(cacheNames = USER_DETAILS_CACHE, key = "#id")
-    @PreAuthorize("hasRole('ADMIN') or (hasRole('USER') and @userAccess.isOwner(#id, authentication))")
     public UserDetailsResponseDto findDetailsById(Long id) {
         User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
         List<PaymentCardResponseDto> paymentCards = paymentCardRepository.findAllByUser_Id(id)
@@ -76,7 +71,6 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     @CacheEvict(cacheNames = USER_DETAILS_CACHE, key = "#id")
-    @PreAuthorize("hasRole('ADMIN') or (hasRole('USER') and @userAccess.isOwner(#id, authentication))")
     public UserResponseDto update(Long id, UserRequestDto dto) {
         User user = findUserById(id);
         ensureEmailAvailable(dto.email(), id);
@@ -89,7 +83,6 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     @CacheEvict(cacheNames = USER_DETAILS_CACHE, key = "#id")
-    @PreAuthorize("hasRole('ADMIN')")
     public UserResponseDto setActive(Long id, boolean active) {
         int updatedRows = userRepository.updateActiveById(id, active);
         if (updatedRows == 0) {
@@ -103,7 +96,6 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     @CacheEvict(cacheNames = USER_DETAILS_CACHE, key = "#id")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
     public void delete(Long id) {
         User user = findUserById(id);
         userRepository.delete(user);

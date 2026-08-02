@@ -18,7 +18,6 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,7 +37,6 @@ public class PaymentCardServiceImpl implements PaymentCardService {
 
     @Override
     @Transactional
-    @PreAuthorize("hasRole('ADMIN') or (hasRole('USER') and @userAccess.isOwner(#userId, authentication))")
     public PaymentCardResponseDto create(Long userId, PaymentCardRequestDto dto) {
         User user = findUserById(userId);
         long cardsCount = paymentCardRepository.countCardsByUserId(userId);
@@ -55,21 +53,18 @@ public class PaymentCardServiceImpl implements PaymentCardService {
     }
 
     @Override
-    @PreAuthorize("hasRole('ADMIN') or (hasRole('USER') and @paymentCardAccess.isOwner(#id, authentication))")
     public PaymentCardResponseDto findById(Long id) {
         PaymentCard paymentCard = findPaymentCardById(id);
         return paymentCardMapper.toDto(paymentCard);
     }
 
     @Override
-    @PreAuthorize("hasRole('ADMIN') or (hasRole('USER') and @userAccess.isOwner(#userId, authentication))")
     public List<PaymentCardResponseDto> findAllByUserId(Long userId) {
         findUserById(userId);
         return paymentCardRepository.findAllByUser_Id(userId).stream().map(paymentCardMapper::toDto).toList();
     }
 
     @Override
-    @PreAuthorize("hasRole('ADMIN')")
     public Page<PaymentCardResponseDto> findAll(String ownerName, String ownerSurname, Pageable pageable) {
         return paymentCardRepository.findAll(PaymentCardSpecifications.byOwnerNameAndSurname(ownerName, ownerSurname), pageable)
                 .map(paymentCardMapper::toDto);
@@ -77,7 +72,6 @@ public class PaymentCardServiceImpl implements PaymentCardService {
 
     @Override
     @Transactional
-    @PreAuthorize("hasRole('ADMIN') or (hasRole('USER') and @paymentCardAccess.isOwner(#id, authentication))")
     public PaymentCardResponseDto update(Long id, PaymentCardRequestDto dto) {
         PaymentCard paymentCard = findPaymentCardById(id);
         Long userId = paymentCard.getUser().getId();
@@ -90,7 +84,6 @@ public class PaymentCardServiceImpl implements PaymentCardService {
 
     @Override
     @Transactional
-    @PreAuthorize("hasRole('ADMIN') or (hasRole('USER') and @paymentCardAccess.isOwner(#id, authentication))")
     public PaymentCardResponseDto setActive(Long id, boolean active) {
         int updatedRows = paymentCardRepository.updateActiveById(id, active);
         if (updatedRows == 0) {
@@ -104,7 +97,6 @@ public class PaymentCardServiceImpl implements PaymentCardService {
 
     @Override
     @Transactional
-    @PreAuthorize("hasRole('ADMIN') or (hasRole('USER') and @paymentCardAccess.isOwner(#id, authentication))")
     public void delete(Long id) {
         PaymentCard paymentCard = findPaymentCardById(id);
         Long userId = paymentCard.getUser().getId();

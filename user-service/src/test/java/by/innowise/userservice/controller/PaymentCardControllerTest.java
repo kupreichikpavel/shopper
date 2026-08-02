@@ -1,10 +1,14 @@
 package by.innowise.userservice.controller;
-import by.innowise.userservice.config.SecurityConfig;
 
 import by.innowise.userservice.dto.paymentcard.PaymentCardRequestDto;
 import by.innowise.userservice.dto.paymentcard.PaymentCardResponseDto;
 import by.innowise.userservice.exception.PaymentCardNotFoundException;
 import by.innowise.userservice.exception.handler.GlobalExceptionHandler;
+import by.innowise.userservice.config.SecurityConfig;
+import by.innowise.userservice.security.PaymentCardAccess;
+import by.innowise.userservice.security.PaymentCardRequestAuthorizationManager;
+import by.innowise.userservice.security.UserAccess;
+import by.innowise.userservice.security.UserRequestAuthorizationManager;
 import by.innowise.userservice.service.PaymentCardService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +46,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(PaymentCardController.class)
 @Import({
         GlobalExceptionHandler.class,
-        SecurityConfig.class
+        SecurityConfig.class,
+        UserRequestAuthorizationManager.class,
+        PaymentCardRequestAuthorizationManager.class
 })
 class PaymentCardControllerTest {
 
@@ -57,6 +63,12 @@ class PaymentCardControllerTest {
 
     @MockitoBean
     private JwtDecoder jwtDecoder;
+
+    @MockitoBean
+    private UserAccess userAccess;
+
+    @MockitoBean
+    private PaymentCardAccess paymentCardAccess;
 
     @SuppressWarnings("unused")
     @MockitoBean(name = "jpaMappingContext")
