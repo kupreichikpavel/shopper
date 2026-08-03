@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import java.util.Collection;
 import java.util.Optional;
 
-@Component("userAccess")
+@Component
 public class UserAccess {
 
     private static final String USER_ID_CLAIM = "userId";

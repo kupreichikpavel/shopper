@@ -1,7 +1,6 @@
 package by.innowise.userservice.config;
 
-import by.innowise.userservice.security.PaymentCardRequestAuthorizationManager;
-import by.innowise.userservice.security.UserRequestAuthorizationManager;
+import by.innowise.userservice.security.ResourceAuthorizationManager;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,9 +32,7 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(
             HttpSecurity http,
             JwtAuthenticationConverter jwtAuthenticationConverter,
-            UserRequestAuthorizationManager userAuthorizationManager,
-            PaymentCardRequestAuthorizationManager
-                    paymentCardAuthorizationManager
+            ResourceAuthorizationManager resourceAuthorizationManager
     ) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
@@ -53,6 +50,12 @@ public class SecurityConfig {
                                 .hasRole("SERVICE")
 
                                 .requestMatchers(
+                                        HttpMethod.DELETE,
+                                        "/api/v1/users/{id}"
+                                )
+                                .hasAnyRole("ADMIN", "SERVICE")
+
+                                .requestMatchers(
                                         HttpMethod.GET,
                                         "/api/v1/users",
                                         "/api/v1/payment-cards"
@@ -67,60 +70,24 @@ public class SecurityConfig {
                                 .hasRole("ADMIN")
 
                                 .requestMatchers(
-                                        HttpMethod.DELETE,
-                                        "/api/v1/users/{id}"
-                                )
-                                .hasAnyRole("ADMIN", "SERVICE")
-
-                                .requestMatchers(
-                                        HttpMethod.GET,
                                         "/api/v1/users/{id}",
-                                        "/api/v1/users/{id}/details"
-                                )
-                                .access(userAuthorizationManager)
-
-                                .requestMatchers(
-                                        HttpMethod.PUT,
-                                        "/api/v1/users/{id}"
-                                )
-                                .access(userAuthorizationManager)
-
-                                .requestMatchers(
-                                        HttpMethod.GET,
+                                        "/api/v1/users/{id}/details",
                                         "/api/v1/users/{userId}/payment-cards"
                                 )
-                                .access(userAuthorizationManager)
-
-                                .requestMatchers(
-                                        HttpMethod.POST,
-                                        "/api/v1/users/{userId}/payment-cards"
+                                .access(
+                                        resourceAuthorizationManager
+                                                ::authorizeUser
                                 )
-                                .access(userAuthorizationManager)
 
                                 .requestMatchers(
-                                        HttpMethod.GET,
-                                        "/api/v1/payment-cards/{id}"
-                                )
-                                .access(paymentCardAuthorizationManager)
-
-                                .requestMatchers(
-                                        HttpMethod.PUT,
-                                        "/api/v1/payment-cards/{id}"
-                                )
-                                .access(paymentCardAuthorizationManager)
-
-                                .requestMatchers(
-                                        HttpMethod.PATCH,
+                                        "/api/v1/payment-cards/{id}",
                                         "/api/v1/payment-cards/{id}/activate",
                                         "/api/v1/payment-cards/{id}/deactivate"
                                 )
-                                .access(paymentCardAuthorizationManager)
-
-                                .requestMatchers(
-                                        HttpMethod.DELETE,
-                                        "/api/v1/payment-cards/{id}"
+                                .access(
+                                        resourceAuthorizationManager
+                                                ::authorizePaymentCard
                                 )
-                                .access(paymentCardAuthorizationManager)
 
                                 .anyRequest()
                                 .authenticated()

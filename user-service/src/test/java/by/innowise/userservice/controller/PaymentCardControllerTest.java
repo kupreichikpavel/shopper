@@ -6,9 +6,8 @@ import by.innowise.userservice.exception.PaymentCardNotFoundException;
 import by.innowise.userservice.exception.handler.GlobalExceptionHandler;
 import by.innowise.userservice.config.SecurityConfig;
 import by.innowise.userservice.security.PaymentCardAccess;
-import by.innowise.userservice.security.PaymentCardRequestAuthorizationManager;
 import by.innowise.userservice.security.UserAccess;
-import by.innowise.userservice.security.UserRequestAuthorizationManager;
+import by.innowise.userservice.security.ResourceAuthorizationManager;
 import by.innowise.userservice.service.PaymentCardService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,8 +46,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import({
         GlobalExceptionHandler.class,
         SecurityConfig.class,
-        UserRequestAuthorizationManager.class,
-        PaymentCardRequestAuthorizationManager.class
+        ResourceAuthorizationManager.class
 })
 class PaymentCardControllerTest {
 

@@ -187,7 +187,7 @@ public class GlobalExceptionHandler {
             AccessDeniedException exception,
             HttpServletRequest request
     ) {
-        log.warn(
+        log.info(
                 "Access denied while processing {} {}",
                 request.getMethod(),
                 request.getRequestURI()
