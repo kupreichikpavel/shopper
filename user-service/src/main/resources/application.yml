@@ -5,6 +5,13 @@ spring:
   profiles:
     default: local
 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8082/realms/shopper}
+          audiences: user-service
+
   cache:
     type: redis
     cache-names:

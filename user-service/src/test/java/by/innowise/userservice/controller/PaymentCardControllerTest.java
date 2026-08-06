@@ -4,6 +4,10 @@ import by.innowise.userservice.dto.paymentcard.PaymentCardRequestDto;
 import by.innowise.userservice.dto.paymentcard.PaymentCardResponseDto;
 import by.innowise.userservice.exception.PaymentCardNotFoundException;
 import by.innowise.userservice.exception.handler.GlobalExceptionHandler;
+import by.innowise.userservice.config.SecurityConfig;
+import by.innowise.userservice.security.PaymentCardAccess;
+import by.innowise.userservice.security.UserAccess;
+import by.innowise.userservice.security.ResourceAuthorizationManager;
 import by.innowise.userservice.service.PaymentCardService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,13 +17,18 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
@@ -34,7 +43,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(PaymentCardController.class)
-@Import(GlobalExceptionHandler.class)
+@Import({
+        GlobalExceptionHandler.class,
+        SecurityConfig.class,
+        ResourceAuthorizationManager.class
+})
 class PaymentCardControllerTest {
 
     private static final Long USER_ID = 1L;
@@ -46,6 +59,15 @@ class PaymentCardControllerTest {
     @MockitoBean
     private PaymentCardService paymentCardService;
 
+    @MockitoBean
+    private JwtDecoder jwtDecoder;
+
+    @MockitoBean
+    private UserAccess userAccess;
+
+    @MockitoBean
+    private PaymentCardAccess paymentCardAccess;
+
     @SuppressWarnings("unused")
     @MockitoBean(name = "jpaMappingContext")
     private JpaMetamodelMappingContext jpaMappingContext;
@@ -55,7 +77,7 @@ class PaymentCardControllerTest {
         when(paymentCardService.findById(CARD_ID))
                 .thenReturn(createResponseDto());
 
-        mockMvc.perform(
+        perform(
                         get(
                                 "/api/v1/payment-cards/{id}",
                                 CARD_ID
@@ -63,10 +85,7 @@ class PaymentCardControllerTest {
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(CARD_ID))
-                .andExpect(
-                        jsonPath("$.userId")
-                                .value(USER_ID)
-                );
+                .andExpect(jsonPath("$.userId").value(USER_ID));
 
         verify(paymentCardService).findById(CARD_ID);
     }
@@ -85,7 +104,7 @@ class PaymentCardControllerTest {
                 )
         );
 
-        mockMvc.perform(
+        perform(
                         get("/api/v1/payment-cards")
                                 .param("ownerName", "Pav")
                                 .param("ownerSurname", "Kup")
@@ -116,21 +135,16 @@ class PaymentCardControllerTest {
                 any(PaymentCardRequestDto.class)
         )).thenReturn(createResponseDto());
 
-        mockMvc.perform(
+        perform(
                         put(
                                 "/api/v1/payment-cards/{id}",
                                 CARD_ID
                         )
-                                .contentType(
-                                        MediaType.APPLICATION_JSON
-                                )
+                                .contentType(MediaType.APPLICATION_JSON)
                                 .content(validRequestJson())
                 )
                 .andExpect(status().isOk())
-                .andExpect(
-                        jsonPath("$.id")
-                                .value(CARD_ID)
-                );
+                .andExpect(jsonPath("$.id").value(CARD_ID));
 
         verify(paymentCardService).update(
                 eq(CARD_ID),
@@ -140,22 +154,17 @@ class PaymentCardControllerTest {
 
     @Test
     void shouldActivatePaymentCard() throws Exception {
-        when(paymentCardService.setActive(
-                CARD_ID,
-                true
-        )).thenReturn(createResponseDto());
+        when(paymentCardService.setActive(CARD_ID, true))
+                .thenReturn(createResponseDto());
 
-        mockMvc.perform(
+        perform(
                         patch(
                                 "/api/v1/payment-cards/{id}/activate",
                                 CARD_ID
                         )
                 )
                 .andExpect(status().isOk())
-                .andExpect(
-                        jsonPath("$.active")
-                                .value(true)
-                );
+                .andExpect(jsonPath("$.active").value(true));
 
         verify(paymentCardService)
                 .setActive(CARD_ID, true);
@@ -163,22 +172,17 @@ class PaymentCardControllerTest {
 
     @Test
     void shouldDeactivatePaymentCard() throws Exception {
-        when(paymentCardService.setActive(
-                CARD_ID,
-                false
-        )).thenReturn(createInactiveResponseDto());
+        when(paymentCardService.setActive(CARD_ID, false))
+                .thenReturn(createInactiveResponseDto());
 
-        mockMvc.perform(
+        perform(
                         patch(
                                 "/api/v1/payment-cards/{id}/deactivate",
                                 CARD_ID
                         )
                 )
                 .andExpect(status().isOk())
-                .andExpect(
-                        jsonPath("$.active")
-                                .value(false)
-                );
+                .andExpect(jsonPath("$.active").value(false));
 
         verify(paymentCardService)
                 .setActive(CARD_ID, false);
@@ -186,7 +190,7 @@ class PaymentCardControllerTest {
 
     @Test
     void shouldDeletePaymentCard() throws Exception {
-        mockMvc.perform(
+        perform(
                         delete(
                                 "/api/v1/payment-cards/{id}",
                                 CARD_ID
@@ -207,21 +211,15 @@ class PaymentCardControllerTest {
                         new PaymentCardNotFoundException(999L)
                 );
 
-        mockMvc.perform(
+        perform(
                         get(
                                 "/api/v1/payment-cards/{id}",
                                 999L
                         )
                 )
                 .andExpect(status().isNotFound())
-                .andExpect(
-                        jsonPath("$.title")
-                                .value("Not Found")
-                )
-                .andExpect(
-                        jsonPath("$.status")
-                                .value(404)
-                )
+                .andExpect(jsonPath("$.title").value("Not Found"))
+                .andExpect(jsonPath("$.status").value(404))
                 .andExpect(
                         jsonPath("$.detail")
                                 .value(
@@ -234,21 +232,15 @@ class PaymentCardControllerTest {
     void shouldRejectNonPositivePaymentCardId()
             throws Exception {
 
-        mockMvc.perform(
+        perform(
                         get(
                                 "/api/v1/payment-cards/{id}",
                                 0
                         )
                 )
                 .andExpect(status().isBadRequest())
-                .andExpect(
-                        jsonPath("$.title")
-                                .value("Bad Request")
-                )
-                .andExpect(
-                        jsonPath("$.status")
-                                .value(400)
-                );
+                .andExpect(jsonPath("$.title").value("Bad Request"))
+                .andExpect(jsonPath("$.status").value(400));
 
         verify(paymentCardService, never())
                 .findById(0L);
@@ -289,4 +281,29 @@ class PaymentCardControllerTest {
                 Instant.parse("2026-01-02T10:00:00Z")
         );
     }
+
+    private ResultActions perform(
+            MockHttpServletRequestBuilder request
+    ) throws Exception {
+        return mockMvc.perform(
+                request.with(
+                        jwt()
+                                .jwt(builder ->
+                                        builder.claim(
+                                                "userId",
+                                                USER_ID
+                                        )
+                                )
+                                .authorities(
+                                        new SimpleGrantedAuthority(
+                                                "ROLE_ADMIN"
+                                        ),
+                                        new SimpleGrantedAuthority(
+                                                "ROLE_SERVICE"
+                                        )
+                                )
+                )
+        );
+    }
+
 }

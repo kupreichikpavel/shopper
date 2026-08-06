@@ -15,17 +15,23 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.context.WebApplicationContext;
 import org.springframework.test.web.servlet.MvcResult;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -36,8 +42,10 @@ class UserServiceFlowIntegrationTest {
 
     private static final String USER_DETAILS_CACHE = "user-details";
 
-    @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private WebApplicationContext applicationContext;
 
     @Autowired
     private UserRepository userRepository;
@@ -50,6 +58,21 @@ class UserServiceFlowIntegrationTest {
 
     @BeforeEach
     void cleanDatabaseAndCache() {
+        mockMvc = webAppContextSetup(applicationContext)
+                .defaultRequest(
+                        get("/")
+                                .with(jwt().authorities(
+                                        new SimpleGrantedAuthority(
+                                                "ROLE_ADMIN"
+                                        ),
+                                        new SimpleGrantedAuthority(
+                                                "ROLE_SERVICE"
+                                        )
+                                ))
+                )
+                .apply(springSecurity())
+                .build();
+
         Cache cache = cacheManager.getCache(
                 USER_DETAILS_CACHE
         );
@@ -81,6 +104,7 @@ class UserServiceFlowIntegrationTest {
         mockMvc.perform(
                         get("/api/v1/users/{id}", userId)
                 )
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(userId))
                 .andExpect(jsonPath("$.name").value("Pavel"))
