@@ -60,6 +60,20 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
+    public UserResponseDto findByEmail(String email) {
+        String normalizedEmail = email.trim();
+
+        User user = userRepository
+                .findByEmailIgnoreCase(normalizedEmail)
+                .orElseThrow(() ->
+                        new UserNotFoundException(normalizedEmail)
+                );
+
+        return userMapper.toDto(user);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     @Cacheable(cacheNames = USER_DETAILS_CACHE, key = "#id")
     public UserDetailsResponseDto findDetailsById(Long id) {
         User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
