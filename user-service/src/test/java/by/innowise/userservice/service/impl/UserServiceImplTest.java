@@ -356,4 +356,45 @@ class UserServiceImplTest {
     private PaymentCardResponseDto createPaymentCardResponseDto() {
         return new PaymentCardResponseDto(CARD_ID, CARD_NUMBER, "PAVEL KUPREICHIK", LocalDate.of(2030, 12, 31), true, USER_ID, Instant.parse("2026-01-01T10:00:00Z"), Instant.parse("2026-01-01T10:00:00Z"));
     }
+
+    @Test
+    void shouldFindUserByEmail() {
+        User user = createUser();
+        UserResponseDto responseDto = createResponseDto();
+
+        when(userRepository.findByEmailIgnoreCase(EMAIL))
+                .thenReturn(Optional.of(user));
+
+        when(userMapper.toDto(user))
+                .thenReturn(responseDto);
+
+        UserResponseDto result =
+                userService.findByEmail(
+                        "  " + EMAIL + "  "
+                );
+
+        assertSame(responseDto, result);
+
+        verify(userRepository)
+                .findByEmailIgnoreCase(EMAIL);
+
+        verify(userMapper).toDto(user);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenUserByEmailDoesNotExist() {
+        when(userRepository.findByEmailIgnoreCase(EMAIL))
+                .thenReturn(Optional.empty());
+
+        assertThrows(
+                UserNotFoundException.class,
+                () -> userService.findByEmail(EMAIL)
+        );
+
+        verify(userRepository)
+                .findByEmailIgnoreCase(EMAIL);
+
+        verifyNoInteractions(userMapper);
+    }
+
 }
