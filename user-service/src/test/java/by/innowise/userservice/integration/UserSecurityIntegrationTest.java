@@ -150,7 +150,7 @@ class UserSecurityIntegrationTest {
         createUser("service.lookup@example.com");
 
         mockMvc.perform(
-                        get("/api/v1/users/by-email")
+                        get("/api/v1/users/email")
                                 .param(
                                         "email",
                                         "service.lookup@example.com"
@@ -169,7 +169,7 @@ class UserSecurityIntegrationTest {
         long userId = createUser("user.lookup@example.com");
 
         mockMvc.perform(
-                        get("/api/v1/users/by-email")
+                        get("/api/v1/users/email")
                                 .param(
                                         "email",
                                         "user.lookup@example.com"
