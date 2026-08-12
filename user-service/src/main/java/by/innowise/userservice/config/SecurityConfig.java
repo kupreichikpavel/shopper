@@ -71,7 +71,7 @@ public class SecurityConfig {
 
                                 .requestMatchers(
                                         HttpMethod.GET,
-                                        "/api/v1/users/by-email"
+                                        "/api/v1/users/email"
                                 )
                                 .hasRole("SERVICE")
                                 .requestMatchers(

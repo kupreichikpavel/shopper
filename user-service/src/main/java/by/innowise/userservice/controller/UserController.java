@@ -51,7 +51,7 @@ public class UserController {
                 .status(HttpStatus.CREATED)
                 .body(createdUser);
     }
-    @GetMapping("/by-email")
+    @GetMapping("/email")
     public ResponseEntity<UserResponseDto> findByEmail(
             @RequestParam
             @NotBlank(message = "Email must not be blank")

@@ -58,6 +58,8 @@ class UserControllerTest {
 
     private static final Long USER_ID = 1L;
     private static final Long CARD_ID = 10L;
+    private static final String USER_EMAIL_ENDPOINT =
+            "/api/v1/users/email";
 
     @Autowired
     private MockMvc mockMvc;
@@ -586,7 +588,7 @@ class UserControllerTest {
                 .thenReturn(createUserResponseDto());
 
         perform(
-                        get("/api/v1/users/by-email")
+                        get(USER_EMAIL_ENDPOINT)
                                 .param("email", email)
                 )
                 .andExpect(status().isOk())
@@ -612,7 +614,7 @@ class UserControllerTest {
                 .thenThrow(new UserNotFoundException(email));
 
         perform(
-                        get("/api/v1/users/by-email")
+                        get(USER_EMAIL_ENDPOINT)
                                 .param("email", email)
                 )
                 .andExpect(status().isNotFound())
@@ -628,7 +630,7 @@ class UserControllerTest {
                 )
                 .andExpect(
                         jsonPath("$.instance")
-                                .value("/api/v1/users/by-email")
+                                .value(USER_EMAIL_ENDPOINT)
                 );
 
         verify(userService).findByEmail(email);
@@ -637,7 +639,7 @@ class UserControllerTest {
     @Test
     void shouldRejectInvalidEmail() throws Exception {
         perform(
-                        get("/api/v1/users/by-email")
+                        get(USER_EMAIL_ENDPOINT)
                                 .param("email", "invalid-email")
                 )
                 .andExpect(status().isBadRequest())
@@ -645,7 +647,7 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(
                         jsonPath("$.instance")
-                                .value("/api/v1/users/by-email")
+                                .value(USER_EMAIL_ENDPOINT)
                 );
 
         verify(userService, never())
