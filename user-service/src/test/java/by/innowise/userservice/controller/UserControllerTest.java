@@ -58,6 +58,8 @@ class UserControllerTest {
 
     private static final Long USER_ID = 1L;
     private static final Long CARD_ID = 10L;
+    private static final String USER_EMAIL_ENDPOINT =
+            "/api/v1/users/email";
 
     @Autowired
     private MockMvc mockMvc;
@@ -575,6 +577,81 @@ class UserControllerTest {
                                 )
                 )
         );
+    }
+
+
+    @Test
+    void shouldFindUserByEmail() throws Exception {
+        String email = "pavel@example.com";
+
+        when(userService.findByEmail(email))
+                .thenReturn(createUserResponseDto());
+
+        perform(
+                        get(USER_EMAIL_ENDPOINT)
+                                .param("email", email)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(USER_ID))
+                .andExpect(jsonPath("$.name").value("Pavel"))
+                .andExpect(
+                        jsonPath("$.surname")
+                                .value("Kupreichik")
+                )
+                .andExpect(jsonPath("$.email").value(email))
+                .andExpect(jsonPath("$.active").value(true));
+
+        verify(userService).findByEmail(email);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenEmailDoesNotExist()
+            throws Exception {
+
+        String email = "missing@example.com";
+
+        when(userService.findByEmail(email))
+                .thenThrow(new UserNotFoundException(email));
+
+        perform(
+                        get(USER_EMAIL_ENDPOINT)
+                                .param("email", email)
+                )
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.title").value("Not Found"))
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(
+                        jsonPath("$.detail")
+                                .value(
+                                        "User with email "
+                                                + email
+                                                + " was not found"
+                                )
+                )
+                .andExpect(
+                        jsonPath("$.instance")
+                                .value(USER_EMAIL_ENDPOINT)
+                );
+
+        verify(userService).findByEmail(email);
+    }
+
+    @Test
+    void shouldRejectInvalidEmail() throws Exception {
+        perform(
+                        get(USER_EMAIL_ENDPOINT)
+                                .param("email", "invalid-email")
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.title").value("Bad Request"))
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(
+                        jsonPath("$.instance")
+                                .value(USER_EMAIL_ENDPOINT)
+                );
+
+        verify(userService, never())
+                .findByEmail(any());
     }
 
 }

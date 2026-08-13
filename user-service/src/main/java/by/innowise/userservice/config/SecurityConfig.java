@@ -70,6 +70,11 @@ public class SecurityConfig {
                                 .hasRole("ADMIN")
 
                                 .requestMatchers(
+                                        HttpMethod.GET,
+                                        "/api/v1/users/email"
+                                )
+                                .hasRole("SERVICE")
+                                .requestMatchers(
                                         "/api/v1/users/{id}",
                                         "/api/v1/users/{id}/details",
                                         "/api/v1/users/{userId}/payment-cards"
@@ -88,7 +93,6 @@ public class SecurityConfig {
                                         resourceAuthorizationManager
                                                 ::authorizePaymentCard
                                 )
-
                                 .anyRequest()
                                 .authenticated()
                 )

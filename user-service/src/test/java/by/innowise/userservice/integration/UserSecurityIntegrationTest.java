@@ -145,6 +145,45 @@ class UserSecurityIntegrationTest {
                 );
     }
 
+    @Test
+    void shouldAllowServiceToFindUserByEmail() throws Exception {
+        createUser("service.lookup@example.com");
+
+        mockMvc.perform(
+                        get("/api/v1/users/email")
+                                .param(
+                                        "email",
+                                        "service.lookup@example.com"
+                                )
+                                .with(serviceJwt())
+                )
+                .andExpect(status().isOk())
+                .andExpect(
+                        jsonPath("$.email")
+                                .value("service.lookup@example.com")
+                );
+    }
+
+    @Test
+    void shouldForbidUserFromFindingUserByEmail() throws Exception {
+        long userId = createUser("user.lookup@example.com");
+
+        mockMvc.perform(
+                        get("/api/v1/users/email")
+                                .param(
+                                        "email",
+                                        "user.lookup@example.com"
+                                )
+                                .with(userJwt(userId))
+                )
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status").value(403))
+                .andExpect(
+                        jsonPath("$.detail")
+                                .value("Access denied")
+                );
+    }
+
     private long createUser(String email) throws Exception {
         MvcResult result = mockMvc.perform(
                         post("/api/v1/users")

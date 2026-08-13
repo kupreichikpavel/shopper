@@ -8,6 +8,9 @@ import by.innowise.userservice.dto.user.UserResponseDto;
 import by.innowise.userservice.service.PaymentCardService;
 import by.innowise.userservice.service.UserService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -48,6 +51,23 @@ public class UserController {
                 .status(HttpStatus.CREATED)
                 .body(createdUser);
     }
+    @GetMapping("/email")
+    public ResponseEntity<UserResponseDto> findByEmail(
+            @RequestParam
+            @NotBlank(message = "Email must not be blank")
+            @Email(message = "Email must have a valid format")
+            @Size(
+                    max = 255,
+                    message = "Email must not exceed 255 characters"
+            )
+            String email
+    ) {
+        return ResponseEntity.ok(
+                userService.findByEmail(email)
+        );
+    }
+
+
 
     @GetMapping("/{id}")
     public ResponseEntity<UserResponseDto> findById(
